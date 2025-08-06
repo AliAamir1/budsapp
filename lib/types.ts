@@ -1,0 +1,165 @@
+// API Types based on Postman collection
+import { z } from 'zod';
+
+// Auth Schemas
+export const SignUpSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(6),
+  full_name: z.string().min(1),
+});
+
+export const LoginSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(6),
+});
+
+export const UpdateProfileSchema = z.object({
+  name: z.string().optional(),
+  gender: z.enum(['male', 'female', 'other']).optional(),
+  birthdate: z.string().optional(), // ISO date string
+  region: z.string().optional(),
+  course: z.string().optional(),
+  examDate: z.string().optional(), // ISO date string
+  partner_preferences: z.object({
+    study_schedule: z.string().optional(),
+    communication_style: z.string().optional(),
+  }).optional(),
+  bio: z.string().optional(),
+  is_premium: z.boolean().optional(),
+  examPreferences: z.object({
+    exam_id: z.string().uuid(),
+    study_start_date: z.string(), // ISO date string
+    study_end_date: z.string(), // ISO date string
+    daily_study_time: z.string(), // HH:mm:ss format
+    intensity: z.enum(['light', 'moderate', 'intense']),
+  }).optional(),
+});
+
+// Match Schemas
+export const CreateMatchSchema = z.object({
+  user1Id: z.string().uuid(),
+  user2Id: z.string().uuid(),
+});
+
+export const UpdateMatchSchema = z.object({
+  matchId: z.string().uuid(),
+  status: z.enum(['pending', 'matched', 'rejected']),
+});
+
+// Type inference
+export type SignUpData = z.infer<typeof SignUpSchema>;
+export type LoginData = z.infer<typeof LoginSchema>;
+export type UpdateProfileData = z.infer<typeof UpdateProfileSchema>;
+export type CreateMatchData = z.infer<typeof CreateMatchSchema>;
+export type UpdateMatchData = z.infer<typeof UpdateMatchSchema>;
+
+// Response Types
+export interface AuthResponse {
+  data: {
+    session: {
+      access_token: string;
+      refresh_token: string;
+      token_type: string;
+      expires_in: number;
+      expires_at: number;
+    };
+    user: {
+      id: string;
+      email: string;
+      name: string;
+      gender?: string;
+      birthdate?: string;
+      region?: string;
+      course?: string;
+      examDate?: string;
+      partner_preferences?: any;
+      bio?: string;
+      is_premium: boolean;
+      created_at: string;
+      updated_at: string;
+      examPreferences?: any;
+    };
+  };
+}
+
+export interface ProfileResponse {
+  data: {
+    id: string;
+    name?: string;
+    gender?: string;
+    birthdate?: string;
+    region?: string;
+    course?: string;
+    examDate?: string;
+    partner_preferences?: {
+      study_schedule?: string;
+      communication_style?: string;
+    };
+    bio?: string;
+    is_premium?: boolean;
+    examPreferences?: {
+      exam_id: string;
+      study_start_date: string;
+      study_end_date: string;
+      daily_study_time: string;
+      intensity: string;
+    };
+  };
+}
+
+export interface Match {
+  id: string;
+  user1Id: string;
+  user2Id: string;
+  status: 'pending' | 'matched' | 'rejected';
+  created_at: string;
+  updated_at: string;
+}
+
+export interface MatchesResponse {
+  data: Match[];
+  pagination?: {
+    page: number;
+    limit: number;
+    total: number;
+  };
+}
+
+export interface PotentialMatch {
+  id: string;
+  name: string;
+  bio?: string;
+  course?: string;
+  region?: string;
+  partner_preferences?: {
+    study_schedule?: string;
+    communication_style?: string;
+  };
+}
+
+export interface PotentialMatchesResponse {
+  data: PotentialMatch[];
+  pagination?: {
+    page: number;
+    limit: number;
+    total: number;
+  };
+}
+
+export interface Exam {
+  id: string;
+  name: string;
+  description?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ExamsResponse {
+  data: Exam[];
+}
+
+export interface ApiError {
+  message: string;
+  code?: string;
+  details?: any;
+}

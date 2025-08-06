@@ -1,0 +1,281 @@
+{
+	"info": {
+		"_postman_id": "c633a2b0-0e29-4567-9b30-fe8de3d58a70",
+		"name": "Buds",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "26643209",
+		"_collection_link": "https://fahadkhawaja-6445568.postman.co/workspace/Buds~2ee5a6b8-f603-4561-b774-deb10b3b5206/collection/44669643-c633a2b0-0e29-4567-9b30-fe8de3d58a70?action=share&source=collection_link&creator=26643209"
+	},
+	"item": [
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "Sign Up",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\":\"mfk653@gmail.com\",\n    \"password\":\"123456\",\n    \"full_name\":\"Jack Nocho\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/auth/signup",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"auth",
+								"signup"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Store access token in environment variable",
+									"const response = pm.response.json();",
+									"pm.environment.set(\"access_token\", response.data.session.access_token);",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\":\"mfk654@gmail.com\",\n    \"password\":\"123456\"\n    // \"full_name\":\"Jack Nocho\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/auth/login",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Profile",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"John Doe\",\n  \"gender\": \"male\",\n  \"birthdate\": \"1995-05-15\",\n  \"region\": \"North America\",\n  \"course\": \"SAT\",\n  \"examDate\": \"2025-12-15\",\n  \"partner_preferences\": {\n    \"study_schedule\": \"evenings\",\n    \"communication_style\": \"video chat\"\n  },\n  \"bio\": \"Looking for study partners\",\n  \"is_premium\": false,\n  \"examPreferences\": {\n    \"exam_id\": \"00277dee-6d7f-446d-86d3-12c9d1bdc951\",\n    \"study_start_date\": \"2025-06-15\",\n    \"study_end_date\": \"2025-12-15\",\n    \"daily_study_time\": \"04:00:00\",\n    \"intensity\": \"intense\"\n  }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/profiles/edit",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"profiles",
+								"edit"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Matches",
+			"item": [
+				{
+					"name": "Find Potential Matches",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/matches/:userId?page&limit",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"matches",
+								":userId"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": null
+								},
+								{
+									"key": "limit",
+									"value": null
+								}
+							],
+							"variable": [
+								{
+									"key": "userId",
+									"value": "3e75abfb-bae2-433a-a6b8-5e5016c25d77"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Find Matched Users",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/matches/:userId/all",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"matches",
+								":userId",
+								"all"
+							],
+							"variable": [
+								{
+									"key": "userId",
+									"value": "3e75abfb-bae2-433a-a6b8-5e5016c25d77"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Match",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"user1Id\":\"24a8187b-a41a-4231-bbf7-76cad14d6f26\",\n    \"user2Id\":\"3e75abfb-bae2-433a-a6b8-5e5016c25d77\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/matches",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"matches"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Match",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"matchId\":\"a998f871-c6a3-46fa-94ba-7e81425bbf34\",\n    \"status\":\"matched\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/matches/status",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"matches",
+								"status"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Get Exams List",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{BASE_URL}}/exams",
+					"host": [
+						"{{BASE_URL}}"
+					],
+					"path": [
+						"exams"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{access_token}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	]
+}
