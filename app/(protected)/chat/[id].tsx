@@ -2,17 +2,17 @@ import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
-    ActivityIndicator,
-    FlatList,
-    Image,
-    Keyboard,
-    KeyboardAvoidingView,
-    Platform,
-    Pressable,
-    StatusBar,
-    TextInput,
-    TouchableWithoutFeedback,
-    View,
+  ActivityIndicator,
+  FlatList,
+  Image,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  StatusBar,
+  TextInput,
+  TouchableWithoutFeedback,
+  View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -74,7 +74,7 @@ export default function ChatScreen() {
       setIsLoading(true);
 
       // Get or create the actual chat
-      const chat = await ChatService.getChat(currentUserId, partnerId);
+      const chat = await ChatService.getOrCreateChat(currentUserId, partnerId);
       setActualChatId(chat.id);
 
       // Get messages
@@ -309,7 +309,7 @@ export default function ChatScreen() {
                 style={{
                   flex: 1,
                   backgroundColor: colors.background[200],
-                  color: colors.typography[900],
+                  color: colors.typography[0],
                   paddingHorizontal: 12,
                   paddingVertical: 8,
                   borderRadius: 20,
@@ -323,7 +323,7 @@ export default function ChatScreen() {
                 multiline
                 maxLength={500}
                 returnKeyType="send"
-                onSubmitEditing={sendMessage}
+                // onSubmitEditing={sendMessage}
                 blurOnSubmit={false}
               />
               <Pressable

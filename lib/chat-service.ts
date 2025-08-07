@@ -2,7 +2,7 @@ import { Chat, Match, Message, supabase } from "./supabase";
 
 export class ChatService {
   // Get or create a chat between two users
-  static async getChat(user1Id: string, user2Id: string): Promise<Chat> {
+  static async getOrCreateChat(user1Id: string, user2Id: string): Promise<Chat> {
     // First, try to find an existing chat
     const { data: existingChats, error: findError } = await supabase
       .from("chat")
@@ -11,18 +11,33 @@ export class ChatService {
         `and(recipient_one.eq.${user1Id},recipient_two.eq.${user2Id}),and(recipient_one.eq.${user2Id},recipient_two.eq.${user1Id})`
       )
       .order("created_at", { ascending: false })
-      .limit(1);
+      // .limit(1);
 
-    console.log("getChat", existingChats, findError, user1Id, user2Id);
+    console.log("getOrCreateChat", existingChats, findError, user1Id, user2Id);
     if (findError) {
       throw new Error(`Failed to fetch existing chat: ${findError.message}`);
     }
 
-    if (!existingChats || existingChats.length === 0) {
-      throw new Error("No chat found");
+    if (existingChats && existingChats.length > 0) {
+      return existingChats[0];
     }
 
-    return existingChats[0];
+    // If no chat exists, create a new one
+    console.log("Creating new chat between", user1Id, "and", user2Id);
+    const { data: newChat, error: createError } = await supabase
+      .from("chat")
+      .insert({
+        recipient_one: user1Id,
+        recipient_two: user2Id,
+      })
+      .select()
+      .single();
+
+    if (createError) {
+      throw new Error(`Failed to create chat: ${createError.message}`);
+    }
+
+    return newChat;
   }
 
   // Get all chats for a user
@@ -147,6 +162,42 @@ export class ChatService {
         },
         (payload) => {
           callback(payload.new as Chat);
+        }
+      )
+      .subscribe();
+  }
+
+  // Subscribe to match updates for a user
+  static subscribeToMatchUpdates(
+    userId: string,
+    callback: (match: Match) => void
+  ) {
+    return supabase
+      .channel(`user_matches:${userId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "matches",
+          filter: `user1_id=eq.${userId}`,
+        },
+        (payload) => {
+          console.log("Match update received (user1)", payload);
+          callback(payload.new as Match);
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "matches",
+          filter: `user2_id=eq.${userId}`,
+        },
+        (payload) => {
+          console.log("Match update received (user2)", payload);
+          callback(payload.new as Match);
         }
       )
       .subscribe();

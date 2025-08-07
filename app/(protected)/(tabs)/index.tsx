@@ -4,7 +4,6 @@ import { HStack } from "@/components/ui/hstack";
 import { VStack } from "@/components/ui/vstack";
 import { useTheme } from "@/hooks/useTheme";
 import { useAuth } from "@/lib/auth-context";
-import { ChatService } from "@/lib/chat-service";
 import { useCreateMatch, usePotentialMatches } from "@/lib/queries";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import Entypo from "@expo/vector-icons/Entypo";
@@ -387,14 +386,6 @@ export default function HomeScreen() {
         {
           onSuccess: async () => {
             console.log("Match created successfully");
-
-            // Create a chat for the new match
-            try {
-              await ChatService.getChat(currentUserId, userId);
-              console.log("Chat created for new match");
-            } catch (error) {
-              console.error("Failed to create chat:", error);
-            }
           },
           onError: (error) => {
             console.error("Failed to create match:", error);

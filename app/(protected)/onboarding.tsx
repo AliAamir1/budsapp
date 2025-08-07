@@ -693,7 +693,7 @@ export default function OnboardingScreen() {
               alt="Buds Logo"
               style={{ width: 120, height: 60 }}
             />
-            <Text size="lg" className="text-center text-secondary-100">
+            <Text size="lg" className="text-center text-primary-500">
               Step {currentStep} of {TOTAL_STEPS}
             </Text>
 
