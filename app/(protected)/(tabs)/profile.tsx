@@ -1,6 +1,6 @@
 import { Link, useRouter } from 'expo-router';
 import React from 'react';
-import { Alert, Image, View } from 'react-native';
+import { Alert, Image, Pressable, View } from 'react-native';
 
 import { Box } from '@/components/ui/box';
 import { Button, ButtonText } from '@/components/ui/button';
@@ -80,44 +80,50 @@ export default function ProfileScreen() {
         <VStack space="md" className="w-full mt-8">
           {/* Edit Profile */}
           <Link href="/(protected)/edit-profile" asChild>
-            <Box className="bg-background-950 rounded-xl p-4 border border-outline-200">
-              <HStack className="items-center justify-between">
-                <HStack space="md" className="items-center">
-                  <Text className="text-2xl">👤</Text>
-                  <Text className="text-typography-0 text-lg font-medium">
-                    Edit Profile
-                  </Text>
+            <Pressable>
+              <Box className="bg-background-950 rounded-xl p-4 border border-outline-200">
+                <HStack className="items-center justify-between">
+                  <HStack space="md" className="items-center">
+                    <Text className="text-2xl">👤</Text>
+                    <Text className="text-typography-0 text-lg font-medium">
+                      Edit Profile
+                    </Text>
+                  </HStack>
+                  <Text className="text-typography-400 text-xl">✏️</Text>
                 </HStack>
-                <Text className="text-typography-400 text-xl">✏️</Text>
-              </HStack>
-            </Box>
+              </Box>
+            </Pressable>
           </Link>
 
           {/* Help & Support */}
-          <Box className="bg-background-950 rounded-xl p-4 border border-outline-200">
-            <HStack className="items-center justify-between">
-              <HStack space="md" className="items-center">
-                <Text className="text-2xl">❓</Text>
-                <Text className="text-typography-0 text-lg font-medium">
-                  Help & Support
-                </Text>
+          <Pressable>
+            <Box className="bg-background-950 rounded-xl p-4 border border-outline-200">
+              <HStack className="items-center justify-between">
+                <HStack space="md" className="items-center">
+                  <Text className="text-2xl">❓</Text>
+                  <Text className="text-typography-0 text-lg font-medium">
+                    Help & Support
+                  </Text>
+                </HStack>
+                <Text className="text-typography-400 text-xl">›</Text>
               </HStack>
-              <Text className="text-typography-400 text-xl">›</Text>
-            </HStack>
-          </Box>
+            </Box>
+          </Pressable>
 
           {/* About Us */}
-          <Box className="bg-background-950 rounded-xl p-4 border border-outline-200">
-            <HStack className="items-center justify-between">
-              <HStack space="md" className="items-center">
-                <Text className="text-2xl">ℹ️</Text>
-                <Text className="text-typography-0 text-lg font-medium">
-                  About Us
-                </Text>
+          <Pressable>
+            <Box className="bg-background-950 rounded-xl p-4 border border-outline-200">
+              <HStack className="items-center justify-between">
+                <HStack space="md" className="items-center">
+                  <Text className="text-2xl">ℹ️</Text>
+                  <Text className="text-typography-0 text-lg font-medium">
+                    About Us
+                  </Text>
+                </HStack>
+                <Text className="text-typography-400 text-xl">›</Text>
               </HStack>
-              <Text className="text-typography-400 text-xl">›</Text>
-            </HStack>
-          </Box>
+            </Box>
+          </Pressable>
 
           {/* Logout */}
           <Button
