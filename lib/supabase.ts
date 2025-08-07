@@ -1,30 +1,41 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { createClient } from '@supabase/supabase-js';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { createClient } from "@supabase/supabase-js";
+import { Platform } from "react-native";
 
 const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!;
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase environment variables');
+  throw new Error("Missing Supabase environment variables");
 }
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
-    storage: {
-      getItem: async (key: string) => {
-        // Use Supabase-specific keys for auth storage
-        const supabaseKey = key.startsWith('supabase') ? key : `supabase_${key}`;
-        return await AsyncStorage.getItem(supabaseKey);
-      },
-      setItem: async (key: string, value: string) => {
-        const supabaseKey = key.startsWith('supabase') ? key : `supabase_${key}`;
-        return await AsyncStorage.setItem(supabaseKey, value);
-      },
-      removeItem: async (key: string) => {
-        const supabaseKey = key.startsWith('supabase') ? key : `supabase_${key}`;
-        return await AsyncStorage.removeItem(supabaseKey);
-      },
-    },
+    ...(Platform.OS !== "web"
+      ? {
+          storage: {
+            getItem: async (key: string) => {
+              // Use Supabase-specific keys for auth storage
+              const supabaseKey = key.startsWith("supabase")
+                ? key
+                : `supabase_${key}`;
+              return await AsyncStorage.getItem(supabaseKey);
+            },
+            setItem: async (key: string, value: string) => {
+              const supabaseKey = key.startsWith("supabase")
+                ? key
+                : `supabase_${key}`;
+              return await AsyncStorage.setItem(supabaseKey, value);
+            },
+            removeItem: async (key: string) => {
+              const supabaseKey = key.startsWith("supabase")
+                ? key
+                : `supabase_${key}`;
+              return await AsyncStorage.removeItem(supabaseKey);
+            },
+          },
+        }
+      : {}),
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: false,
@@ -52,10 +63,11 @@ export interface Message {
   chat_id: string;
 }
 
+
 export interface Match {
   id: string;
   user1_id: string;
   user2_id: string;
   matched_at: string;
-  status: 'pending' | 'matched' | 'rejected';
-} 
+  status: "pending" | "matched" | "rejected";
+}

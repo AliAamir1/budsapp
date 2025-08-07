@@ -1,17 +1,17 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios, { AxiosError, AxiosInstance } from "axios";
 import {
-    ApiError,
-    AuthResponse,
-    CreateMatchData,
-    ExamsResponse,
-    LoginData,
-    MatchesResponse,
-    PotentialMatchesResponse,
-    ProfileResponse,
-    SignUpData,
-    UpdateMatchData,
-    UpdateProfileData,
+  ApiError,
+  AuthResponse,
+  CreateMatchData,
+  ExamsResponse,
+  LoginData,
+  MatchesResponse,
+  PotentialMatchesResponse,
+  ProfileResponse,
+  SignUpData,
+  UpdateMatchData,
+  UpdateProfileData,
 } from "./types";
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;

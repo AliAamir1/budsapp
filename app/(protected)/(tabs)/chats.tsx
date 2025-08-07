@@ -154,7 +154,7 @@ export default function ChatsScreen() {
       <VStack space="lg" className="flex-1">
         {/* Header */}
         <Heading size="2xl" className="text-typography-0">
-          Chats
+          Matches
         </Heading>
 
         {/* Matches List */}

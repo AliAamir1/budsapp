@@ -387,7 +387,7 @@ export default function HomeScreen() {
 
             // Create a chat for the new match
             try {
-              await ChatService.getOrCreateChat(currentUserId, userId);
+              await ChatService.getChat(currentUserId, userId);
               console.log("Chat created for new match");
             } catch (error) {
               console.error("Failed to create chat:", error);

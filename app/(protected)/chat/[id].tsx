@@ -67,7 +67,7 @@ export default function ChatScreen() {
       setIsLoading(true);
 
       // Get or create the actual chat
-      const chat = await ChatService.getOrCreateChat(currentUserId, partnerId);
+      const chat = await ChatService.getChat(currentUserId, partnerId);
       setActualChatId(chat.id);
 
       // Get messages
@@ -256,7 +256,7 @@ export default function ChatScreen() {
         >
           <FlatList
             ref={flatListRef}
-            data={messages.reverse()}
+            data={messages}
             renderItem={renderMessage}
             keyExtractor={(item) => item.id}
             inverted
