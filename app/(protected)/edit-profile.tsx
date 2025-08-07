@@ -2,7 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "expo-router";
 import React from "react";
 import { Controller, useForm } from "react-hook-form";
-import { Alert, Image, KeyboardAvoidingView, ScrollView } from "react-native";
+import { Alert, Image, KeyboardAvoidingView, Pressable, ScrollView } from "react-native";
 
 import { Box } from "@/components/ui/box";
 import { Button, ButtonText } from "@/components/ui/button";
@@ -30,6 +30,7 @@ import { studySchedules } from "@/consts/studySchedule";
 import { useAuth } from "@/lib/auth-context";
 import { useExams, useUpdateProfile } from "@/lib/queries";
 import { UpdateProfileData, UpdateProfileSchema } from "@/lib/types";
+import { Ionicons } from "@expo/vector-icons";
 
 export default function EditProfileScreen() {
   const router = useRouter();
@@ -89,6 +90,9 @@ export default function EditProfileScreen() {
           <VStack space="xl" className="pb-8">
             {/* Header */}
             <VStack space="md" className="items-center">
+              <Pressable onPress={() => router.back()} className="absolute top-0 left-0">
+                <Ionicons name="arrow-back" size={24} color="black" />
+              </Pressable>
               <Image
                 source={require("@/assets/images/logo.png")}
                 alt="Buds Logo"

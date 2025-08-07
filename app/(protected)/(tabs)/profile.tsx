@@ -71,7 +71,7 @@ export default function ProfileScreen() {
           <Heading size="2xl" className="text-primary-500">
             {user?.name || "Unknown User"}
           </Heading>
-          <Text className="text-typography-500 text-lg">
+          <Text className="text-typography-0 text-lg">
             {user?.email || "No email"}
           </Text>
         </VStack>
