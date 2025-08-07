@@ -95,6 +95,7 @@ export default function ChatScreen() {
     const subscription = ChatService.subscribeToChatMessages(
       actualChatId,
       (newMessage) => {
+        if (newMessage.sender_id === currentUserId) return;
         setMessages((prevMessages) => [
           convertMessage(newMessage),
           ...prevMessages,
