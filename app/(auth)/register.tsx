@@ -1,19 +1,25 @@
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Link, useRouter } from 'expo-router';
-import React from 'react';
-import { Controller, useForm } from 'react-hook-form';
-import { Alert, Image } from 'react-native';
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Link, useRouter } from "expo-router";
+import React from "react";
+import { Controller, useForm } from "react-hook-form";
+import { Alert, Image } from "react-native";
 
-import { Box } from '@/components/ui/box';
-import { Button, ButtonText } from '@/components/ui/button';
-import { FormControl, FormControlError, FormControlErrorText, FormControlLabel, FormControlLabelText } from '@/components/ui/form-control';
-import { Heading } from '@/components/ui/heading';
-import { HStack } from '@/components/ui/hstack';
-import { Input, InputField } from '@/components/ui/input';
-import { Text } from '@/components/ui/text';
-import { VStack } from '@/components/ui/vstack';
-import { useSignUp } from '@/lib/queries';
-import { SignUpData, SignUpSchema } from '@/lib/types';
+import { Box } from "@/components/ui/box";
+import { Button, ButtonText } from "@/components/ui/button";
+import {
+  FormControl,
+  FormControlError,
+  FormControlErrorText,
+  FormControlLabel,
+  FormControlLabelText,
+} from "@/components/ui/form-control";
+import { Heading } from "@/components/ui/heading";
+import { HStack } from "@/components/ui/hstack";
+import { Input, InputField } from "@/components/ui/input";
+import { Text } from "@/components/ui/text";
+import { VStack } from "@/components/ui/vstack";
+import { useSignUp } from "@/lib/queries";
+import { SignUpData, SignUpSchema } from "@/lib/types";
 
 export default function RegisterScreen() {
   const router = useRouter();
@@ -26,9 +32,9 @@ export default function RegisterScreen() {
   } = useForm<SignUpData>({
     resolver: zodResolver(SignUpSchema),
     defaultValues: {
-      email: '',
-      password: '',
-      full_name: '',
+      email: "",
+      password: "",
+      full_name: "",
     },
   });
 
@@ -36,17 +42,20 @@ export default function RegisterScreen() {
     try {
       await signUpMutation.mutateAsync(data);
       Alert.alert(
-        'Registration Successful',
-        'Your account has been created successfully. Please login.',
+        "Registration Successful",
+        "Your account has been created successfully. Please login.",
         [
           {
-            text: 'OK',
-            onPress: () => router.replace('/(auth)/login'),
+            text: "OK",
+            onPress: () => router.replace("/(auth)/login"),
           },
         ]
       );
     } catch (error: any) {
-      Alert.alert('Registration Failed', error.message || 'Something went wrong');
+      Alert.alert(
+        "Registration Failed",
+        error.message || "Something went wrong"
+      );
     }
   };
 
@@ -61,22 +70,22 @@ export default function RegisterScreen() {
           <Text size="lg" className="text-center text-typography-0 font-medium">
             Meet, Study, Connect
           </Text>
-          
+
           {/* Chick Characters */}
           <HStack space="md" className="items-center justify-center my-4">
-            <Image 
-              source={require('@/assets/images/chick.png')} 
-              alt="Chick 1" 
+            <Image
+              source={require("@/assets/images/chick.png")}
+              alt="Chick 1"
               style={{ width: 60, height: 60 }}
             />
-            <Image 
-              source={require('@/assets/images/chick-thumbs-up.png')} 
-              alt="Chick 2" 
+            <Image
+              source={require("@/assets/images/chick-thumbs-up.png")}
+              alt="Chick 2"
               style={{ width: 60, height: 60 }}
             />
           </HStack>
-          
-          <Text size="md" className="text-center text-secondary-100">
+
+          <Text size="2xl" className="text-center text-primary-500 font-bold">
             Join Buds and find your study partner
           </Text>
         </VStack>
@@ -86,13 +95,15 @@ export default function RegisterScreen() {
           {/* Full Name Field */}
           <FormControl isInvalid={!!errors.full_name}>
             <FormControlLabel>
-              <FormControlLabelText className="text-typography-0">Full Name</FormControlLabelText>
+              <FormControlLabelText className="text-typography-0 text-xl">
+                Full Name
+              </FormControlLabelText>
             </FormControlLabel>
             <Controller
               control={control}
               name="full_name"
               render={({ field: { onChange, onBlur, value } }) => (
-                <Input>
+                <Input size="xl">
                   <InputField
                     placeholder="Enter your full name"
                     value={value}
@@ -100,6 +111,7 @@ export default function RegisterScreen() {
                     onBlur={onBlur}
                     autoCapitalize="words"
                     autoComplete="name"
+                    className="text-xl"
                   />
                 </Input>
               )}
@@ -114,13 +126,15 @@ export default function RegisterScreen() {
           {/* Email Field */}
           <FormControl isInvalid={!!errors.email}>
             <FormControlLabel>
-              <FormControlLabelText className="text-typography-0">Email</FormControlLabelText>
+              <FormControlLabelText className="text-typography-0 text-xl">
+                Email
+              </FormControlLabelText>
             </FormControlLabel>
             <Controller
               control={control}
               name="email"
               render={({ field: { onChange, onBlur, value } }) => (
-                <Input>
+                <Input size="xl">
                   <InputField
                     placeholder="Enter your email"
                     value={value}
@@ -143,13 +157,15 @@ export default function RegisterScreen() {
           {/* Password Field */}
           <FormControl isInvalid={!!errors.password}>
             <FormControlLabel>
-              <FormControlLabelText className="text-typography-0">Password</FormControlLabelText>
+              <FormControlLabelText className="text-typography-0 text-xl">
+                Password
+              </FormControlLabelText>
             </FormControlLabel>
             <Controller
               control={control}
               name="password"
               render={({ field: { onChange, onBlur, value } }) => (
-                <Input>
+                <Input size="xl">
                   <InputField
                     placeholder="Enter your password (min 6 characters)"
                     value={value}
@@ -173,20 +189,23 @@ export default function RegisterScreen() {
             onPress={handleSubmit(onSubmit)}
             isDisabled={signUpMutation.isPending}
             className="mt-4 bg-primary-500 rounded-full"
+            size="lg"
           >
             <ButtonText className="text-white font-semibold">
-              {signUpMutation.isPending ? 'Creating Account...' : 'Create Account'}
+              {signUpMutation.isPending
+                ? "Creating Account..."
+                : "Create Account"}
             </ButtonText>
           </Button>
         </VStack>
 
         {/* Footer */}
         <HStack space="sm" className="justify-center">
-          <Text size="sm" className="text-typography-200">
+          <Text size="lg" className="text-typography-0">
             Already have an account?
           </Text>
           <Link href="/(auth)/login" asChild>
-            <Text size="sm" className="text-secondary-100 font-medium">
+            <Text size="lg" className="text-primary-500 font-medium">
               Sign In
             </Text>
           </Link>

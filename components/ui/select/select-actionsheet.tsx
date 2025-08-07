@@ -5,21 +5,21 @@ import type { VariantProps } from '@gluestack-ui/nativewind-utils';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { withStyleContext } from '@gluestack-ui/nativewind-utils/withStyleContext';
 import {
-  AnimatePresence,
-  createMotionAnimatedComponent,
-  Motion,
-  MotionComponentProps,
+    AnimatePresence,
+    createMotionAnimatedComponent,
+    Motion,
+    MotionComponentProps,
 } from '@legendapp/motion';
 import { cssInterop } from 'nativewind';
 import {
-  FlatList,
-  Pressable,
-  ScrollView,
-  SectionList,
-  Text,
-  View,
-  ViewStyle,
-  VirtualizedList,
+    FlatList,
+    Pressable,
+    ScrollView,
+    SectionList,
+    Text,
+    View,
+    ViewStyle,
+    VirtualizedList,
 } from 'react-native';
 
 import React from 'react';
@@ -210,7 +210,7 @@ const actionsheetSectionHeaderTextStyle = tva({
 });
 
 const actionsheetIconStyle = tva({
-  base: 'text-typography-900',
+  base: 'text-typography-0',
   variants: {
     size: {
       '2xs': 'h-3 w-3',
@@ -544,8 +544,8 @@ const ActionsheetIcon = React.forwardRef<
 });
 
 export {
-  Actionsheet, ActionsheetBackdrop, ActionsheetContent, ActionsheetDragIndicator,
-  ActionsheetDragIndicatorWrapper, ActionsheetFlatList, ActionsheetIcon, ActionsheetItem,
-  ActionsheetItemText, ActionsheetScrollView, ActionsheetSectionHeaderText, ActionsheetSectionList, ActionsheetVirtualizedList
+    Actionsheet, ActionsheetBackdrop, ActionsheetContent, ActionsheetDragIndicator,
+    ActionsheetDragIndicatorWrapper, ActionsheetFlatList, ActionsheetIcon, ActionsheetItem,
+    ActionsheetItemText, ActionsheetScrollView, ActionsheetSectionHeaderText, ActionsheetSectionList, ActionsheetVirtualizedList
 };
 

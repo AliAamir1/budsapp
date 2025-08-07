@@ -1,5 +1,6 @@
 import React from "react";
 import { Dropdown } from "react-native-element-dropdown";
+import { useTheme } from "../../hooks/useTheme";
 
 interface DropdownOption {
   label: string;
@@ -23,6 +24,8 @@ export const ElementDropdown: React.FC<ElementDropdownProps> = ({
   size = "xl",
   zIndex = 9999,
 }) => {
+  const { colors } = useTheme();
+
   const getHeight = () => {
     switch (size) {
       case "sm":
@@ -57,19 +60,19 @@ export const ElementDropdown: React.FC<ElementDropdownProps> = ({
     <Dropdown
       style={{
         height: getHeight(),
-        backgroundColor: "#ffffff",
-        borderColor: "#e5e7eb",
+        backgroundColor: colors.background[0],
+        borderColor: colors.outline[200],
         borderWidth: 1,
         borderRadius: 12,
         paddingHorizontal: 16,
       }}
       placeholderStyle={{
         fontSize: getTextSize(),
-        color: "#9ca3af",
+        color: colors.typography[500],
       }}
       inputSearchStyle={{
         fontSize: getTextSize(),
-        color: "#1f2937",
+        color: colors.typography[500],
       }}
       data={items}
       search
@@ -84,15 +87,15 @@ export const ElementDropdown: React.FC<ElementDropdownProps> = ({
       }}
       renderLeftIcon={() => null}
       renderRightIcon={() => null}
-      activeColor="#f3f4f6"
+      activeColor={colors.background[100]}
       containerStyle={{
-        backgroundColor: "#ffffff",
-        borderColor: "#e5e7eb",
+        backgroundColor: colors.background[0],
+        borderColor: colors.outline[200],
         borderWidth: 1,
         borderRadius: 12,
         marginTop: 8,
         elevation: 5,
-        shadowColor: "#000",
+        shadowColor: colors.background[0],
         shadowOffset: {
           width: 0,
           height: 2,
@@ -101,19 +104,19 @@ export const ElementDropdown: React.FC<ElementDropdownProps> = ({
         shadowRadius: 3.84,
       }}
       itemContainerStyle={{
-        backgroundColor: "#ffffff",
+        backgroundColor: colors.background[0],
       }}
       itemTextStyle={{
         fontSize: getTextSize(),
-        color: "#1f2937",
+        color: colors.typography[0],
         paddingVertical: 8,
       }}
       selectedTextStyle={{
         fontSize: getTextSize(),
-        color: "#1f2937",
-        fontWeight: "600",
-        paddingVertical: 8,
+        color: colors.typography[0],
+
+        paddingVertical: 6,
       }}
     />
   );
-}; 
+};

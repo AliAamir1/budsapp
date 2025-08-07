@@ -1,15 +1,15 @@
 'use client';
-import { Text, View } from 'react-native';
-import React from 'react';
 import { createFormControl } from '@gluestack-ui/form-control';
+import { PrimitiveIcon, UIIcon } from '@gluestack-ui/icon';
+import type { VariantProps } from '@gluestack-ui/nativewind-utils';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import {
-  withStyleContext,
-  useStyleContext,
+    useStyleContext,
+    withStyleContext,
 } from '@gluestack-ui/nativewind-utils/withStyleContext';
 import { cssInterop } from 'nativewind';
-import type { VariantProps } from '@gluestack-ui/nativewind-utils';
-import { PrimitiveIcon, UIIcon } from '@gluestack-ui/icon';
+import React from 'react';
+import { Text, View } from 'react-native';
 
 const SCOPE = 'FORM_CONTROL';
 
@@ -131,7 +131,7 @@ const formControlLabelStyle = tva({
 });
 
 const formControlLabelTextStyle = tva({
-  base: 'font-medium text-typography-900',
+  base: 'font-medium text-typography-0',
   variants: {
     isTruncated: {
       true: 'web:truncate',
@@ -171,7 +171,7 @@ const formControlLabelTextStyle = tva({
 });
 
 const formControlLabelAstrickStyle = tva({
-  base: 'font-medium text-typography-900',
+  base: 'font-medium text-typography-0',
   variants: {
     isTruncated: {
       true: 'web:truncate',
@@ -456,13 +456,8 @@ FormControlHelper.displayName = 'FormControlHelper';
 FormControlHelperText.displayName = 'FormControlHelperText';
 
 export {
-  FormControl,
-  FormControlError,
-  FormControlErrorText,
-  FormControlErrorIcon,
-  FormControlLabel,
-  FormControlLabelText,
-  FormControlLabelAstrick,
-  FormControlHelper,
-  FormControlHelperText,
+    FormControl,
+    FormControlError, FormControlErrorIcon, FormControlErrorText, FormControlHelper,
+    FormControlHelperText, FormControlLabel, FormControlLabelAstrick, FormControlLabelText
 };
+

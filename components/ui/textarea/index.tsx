@@ -75,6 +75,7 @@ const TextareaInput = React.forwardRef<
   return (
     <UITextarea.Input
       ref={ref}
+      style={{ color: "black" }}
       {...props}
       className={textareaInputStyle({
         parentVariants: {

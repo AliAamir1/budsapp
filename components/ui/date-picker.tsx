@@ -67,7 +67,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
           }}
         >
           <Text 
-            className={`flex-1 text-lg ${value ? 'text-typography-900' : 'text-typography-500'}`}
+            className={`flex-1 text-lg ${value ? 'text-typography-0' : 'text-typography-500'}`}
             numberOfLines={1}
           >
             {value ? formatDisplayDate(value) : placeholder}

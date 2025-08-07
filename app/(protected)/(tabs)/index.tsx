@@ -2,6 +2,7 @@ import { Box } from "@/components/ui/box";
 import { Heading } from "@/components/ui/heading";
 import { HStack } from "@/components/ui/hstack";
 import { VStack } from "@/components/ui/vstack";
+import { useTheme } from "@/hooks/useTheme";
 import { useAuth } from "@/lib/auth-context";
 import { ChatService } from "@/lib/chat-service";
 import { useCreateMatch, usePotentialMatches } from "@/lib/queries";
@@ -45,6 +46,7 @@ interface UserCardProps {
 }
 
 const UserCard: React.FC<UserCardProps> = ({ user, index, onSwipe, isTop }) => {
+  const { colors } = useTheme();
   const translateX = useSharedValue(0);
   const translateY = useSharedValue(0);
   const scale = useSharedValue(isTop ? 1 : 0.95);
@@ -52,7 +54,7 @@ const UserCard: React.FC<UserCardProps> = ({ user, index, onSwipe, isTop }) => {
   const rotation = useSharedValue(0);
   const circleScale = useSharedValue(0);
   const circleOpacity = useSharedValue(0);
-  const cardColor = useSharedValue("#ffffff"); // Default white color
+  const cardColor = useSharedValue(colors.background[0]); // Default white color
   const leftCircleOpacity = useSharedValue(0);
   const rightCircleOpacity = useSharedValue(0);
 
@@ -112,7 +114,7 @@ const UserCard: React.FC<UserCardProps> = ({ user, index, onSwipe, isTop }) => {
         leftCircleOpacity.value = withSpring(0, { damping: 15 });
         rightCircleOpacity.value = withSpring(0, { damping: 15 });
         rotation.value = withSpring(0, { damping: 15 });
-        cardColor.value = "#ffffff"; // Reset to default white color
+        cardColor.value = colors.background[0]; // Reset to default white color
       }
     },
     onEnd: (event) => {
@@ -146,7 +148,7 @@ const UserCard: React.FC<UserCardProps> = ({ user, index, onSwipe, isTop }) => {
         leftCircleOpacity.value = withSpring(0);
         rightCircleOpacity.value = withSpring(0);
         rotation.value = withSpring(0);
-        cardColor.value = withSpring("#ffffff");
+        cardColor.value = withSpring(colors.background[0]);
       }
     },
   });
@@ -192,7 +194,7 @@ const UserCard: React.FC<UserCardProps> = ({ user, index, onSwipe, isTop }) => {
         style={[
           {
             position: "absolute",
-            width: screenWidth * 0.80,
+            width: screenWidth * 0.875,
             height: 420,
             alignSelf: "center",
             top: 50,
@@ -212,7 +214,7 @@ const UserCard: React.FC<UserCardProps> = ({ user, index, onSwipe, isTop }) => {
                   width: 80,
                   height: 80,
                   borderRadius: 40,
-                  backgroundColor: "#10b981",
+                  backgroundColor: colors.success[500],
                   justifyContent: "center",
                   alignItems: "center",
                   zIndex: 20,
@@ -232,7 +234,7 @@ const UserCard: React.FC<UserCardProps> = ({ user, index, onSwipe, isTop }) => {
                   width: 80,
                   height: 80,
                   borderRadius: 40,
-                  backgroundColor: "#ef4444",
+                  backgroundColor: colors.error[500],
                   justifyContent: "center",
                   alignItems: "center",
                   zIndex: 20,
@@ -244,13 +246,13 @@ const UserCard: React.FC<UserCardProps> = ({ user, index, onSwipe, isTop }) => {
             </Animated.View>
 
             {/* Chick Avatar */}
-            <VStack space="md" className="items-center">
+            <VStack space="md" className="items-center rounded-xl p-2">
               <View
                 style={{
                   width: 80,
                   height: 80,
                   borderRadius: 40,
-                  backgroundColor: "#4AC3C7",
+                  backgroundColor: colors.primary[500],
                   justifyContent: "center",
                   alignItems: "center",
                   marginBottom: 16,
@@ -263,77 +265,77 @@ const UserCard: React.FC<UserCardProps> = ({ user, index, onSwipe, isTop }) => {
               </View>
 
               {/* User Info */}
-              <VStack space="sm" className="w-full">
+              <VStack space="sm" className="w-full ">
                 <HStack className="justify-between items-center border-b border-typography-300 pb-2">
-                  <Text className="text-typography-900 font-semibold text-base">
+                  <Text className="text-primary-500 font-semibold text-lg">
                     Name:
                   </Text>
-                  <Text className="text-typography-600 text-base">
+                  <Text className="text-typography-0 text-lg font-semibold">
                     {user.full_name}
                   </Text>
                 </HStack>
 
                 <HStack className="justify-between items-center border-b border-typography-300 pb-2">
-                  <Text className="text-typography-900 font-semibold text-base">
+                  <Text className="text-primary-500 font-semibold text-lg">
                     Match Score:
                   </Text>
-                  <Text className="text-typography-600 text-base">
+                  <Text className="text-typography-0 text-lg font-semibold">
                     {user.match_score}%
                   </Text>
                 </HStack>
 
                 <HStack className="justify-between items-center border-b border-typography-300 pb-2">
-                  <Text className="text-typography-900 font-semibold text-base">
+                  <Text className="text-primary-500 text-lg font-semibold">
                     Study Period:
                   </Text>
-                  <Text className="text-typography-600 text-base">
+                  <Text className="text-typography-0 text-md text-md font-semibold">
                     {new Date(user.study_start_date).toLocaleDateString()} -{" "}
                     {new Date(user.study_end_date).toLocaleDateString()}
                   </Text>
                 </HStack>
 
                 <HStack className="justify-between items-center border-b border-typography-300 pb-2">
-                  <Text className="text-typography-900 font-semibold text-base">
+                  <Text className="text-primary-500 font-semibold text-lg">
                     Daily Study:
                   </Text>
-                  <Text className="text-typography-600 text-base">
+                  <Text className="text-typography-0 text-lg font-semibold">
                     {user.daily_study_time.split(":")[0]}h{" "}
                     {user.daily_study_time.split(":")[1]}m
                   </Text>
                 </HStack>
 
                 <HStack className="justify-between items-center border-b border-typography-300 pb-2">
-                  <Text className="text-typography-900 font-semibold text-base">
+                  <Text className="text-primary-500 font-semibold text-lg">
                     Intensity:
                   </Text>
-                  <Text className="text-typography-600 text-base capitalize">
+                  <Text className="text-typography-0 text-lg capitalize font-semibold">
                     {user.intensity}
                   </Text>
                 </HStack>
 
                 {user.gender && (
                   <HStack className="justify-between items-center border-b border-typography-300 pb-2">
-                    <Text className="text-typography-900 font-semibold text-base">
+                    <Text className="text-primary-500 font-semibold text-lg">
                       Gender:
                     </Text>
-                    <Text className="text-typography-600 text-base capitalize">
+                    <Text className="text-typography-0 text-lg capitalize font-semibold">
                       {user.gender}
                     </Text>
                   </HStack>
                 )}
 
                 <HStack className="justify-between items-center pt-2">
-                  <Text className="text-typography-900 font-semibold text-base">
+                  <Text className="text-primary-500 font-semibold text-lg">
                     Overlap:
                   </Text>
-                  <Text className="text-typography-600 text-base">
+                  <Text className="text-typography-0 text-base font-semibold">
                     {user.overlap_days} days
                   </Text>
                 </HStack>
               </VStack>
 
               {/* Decorative Chick */}
-              <View style={{ position: "absolute", bottom: -10, right: 10 }}>
+              {/* <View style={{ position: "absolute", bottom: -10, right: '50%' }}>
                 <Image
                   source={require("@/assets/images/chick-thumbs-up.png")}
                   style={{ width: 50, height: 50 }}
@@ -348,7 +350,7 @@ const UserCard: React.FC<UserCardProps> = ({ user, index, onSwipe, isTop }) => {
                 >
                   ✨
                 </Text>
-              </View>
+              </View> */}
             </VStack>
           </Box>
         </Animated.View>
@@ -361,6 +363,7 @@ export default function HomeScreen() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const createMatchMutation = useCreateMatch();
   const { getCurrentUserId } = useAuth();
+  const { colors } = useTheme();
 
   // Get current user ID from auth context
   const currentUserId = getCurrentUserId();

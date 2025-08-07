@@ -7,11 +7,11 @@ import { Alert, Image } from "react-native";
 import { Box } from "@/components/ui/box";
 import { Button, ButtonText } from "@/components/ui/button";
 import {
-    FormControl,
-    FormControlError,
-    FormControlErrorText,
-    FormControlLabel,
-    FormControlLabelText,
+  FormControl,
+  FormControlError,
+  FormControlErrorText,
+  FormControlLabel,
+  FormControlLabelText,
 } from "@/components/ui/form-control";
 import { Heading } from "@/components/ui/heading";
 import { HStack } from "@/components/ui/hstack";
@@ -95,7 +95,7 @@ export default function LoginScreen() {
             />
           </HStack>
 
-          <Text size="2xl" className="text-center text-secondary-100 italic">
+          <Text size="3xl" className="text-center text-primary-500 italic font-bold">
             Login
           </Text>
         </VStack>
@@ -184,7 +184,7 @@ export default function LoginScreen() {
             Don't have an account?
           </Text>
           <Link href="/(auth)/register" asChild>
-            <Text size="lg" className="text-secondary-100 font-medium">
+            <Text size="lg" className="text-primary-500 font-medium">
               Sign Up
             </Text>
           </Link>

@@ -55,9 +55,13 @@ export default function OnboardingScreen() {
   const { user, setAuthState } = useAuth();
   const updateProfileMutation = useUpdateProfile();
   const [currentStep, setCurrentStep] = useState(1);
-  
+
   // Fetch exams from API
-  const { data: examsData, isLoading: examsLoading, error: examsError } = useExams();
+  const {
+    data: examsData,
+    isLoading: examsLoading,
+    error: examsError,
+  } = useExams();
 
   const {
     control,
@@ -113,7 +117,12 @@ export default function OnboardingScreen() {
       case 4:
         return ["bio"] as const;
       case 5:
-        return ["study_start_date", "study_end_date", "daily_study_time", "intensity"] as const;
+        return [
+          "study_start_date",
+          "study_end_date",
+          "daily_study_time",
+          "intensity",
+        ] as const;
       default:
         return [] as const;
     }
@@ -301,10 +310,14 @@ export default function OnboardingScreen() {
                     value={value}
                     onValueChange={onChange}
                     placeholder="Select your country"
-                    items={Array.isArray(countries) ? countries.map((country) => ({
-                      label: country.name,
-                      value: country.name,
-                    })) : []}
+                    items={
+                      Array.isArray(countries)
+                        ? countries.map((country) => ({
+                            label: country.name,
+                            value: country.name,
+                          }))
+                        : []
+                    }
                     size="xl"
                     zIndex={5000}
                   />
@@ -334,17 +347,25 @@ export default function OnboardingScreen() {
                     onValueChange={(selectedCourse) => {
                       onChange(selectedCourse);
                       // Also set the exam_id when course is selected
-                      const selectedExam = examsData?.data?.find(exam => exam.name === selectedCourse);
+                      const selectedExam = examsData?.data?.find(
+                        (exam) => exam.name === selectedCourse
+                      );
                       if (selectedExam) {
                         // Update the exam_id field using setValue from useForm
-                        setValue('exam_id', selectedExam.id);
+                        setValue("exam_id", selectedExam.id);
                       }
                     }}
-                    placeholder={examsLoading ? "Loading courses..." : "Select your course"}
-                    items={Array.isArray(examsData?.data) ? examsData.data.map((exam) => ({
-                      label: exam.name,
-                      value: exam.name,
-                    })) : []}
+                    placeholder={
+                      examsLoading ? "Loading courses..." : "Select your course"
+                    }
+                    items={
+                      Array.isArray(examsData?.data)
+                        ? examsData.data.map((exam) => ({
+                            label: exam.name,
+                            value: exam.name,
+                          }))
+                        : []
+                    }
                     size="xl"
                     zIndex={4000}
                   />
@@ -411,10 +432,14 @@ export default function OnboardingScreen() {
                     value={value}
                     onValueChange={onChange}
                     placeholder="When do you prefer to study?"
-                    items={Array.isArray(studySchedules) ? studySchedules.map((schedule) => ({
-                      label: schedule.label,
-                      value: schedule.value,
-                    })) : []}
+                    items={
+                      Array.isArray(studySchedules)
+                        ? studySchedules.map((schedule) => ({
+                            label: schedule.label,
+                            value: schedule.value,
+                          }))
+                        : []
+                    }
                     size="xl"
                     zIndex={3000}
                   />
@@ -443,10 +468,14 @@ export default function OnboardingScreen() {
                     value={value}
                     onValueChange={onChange}
                     placeholder="How do you like to communicate?"
-                    items={Array.isArray(communicationStyles) ? communicationStyles.map((style) => ({
-                      label: style.label,
-                      value: style.value,
-                    })) : []}
+                    items={
+                      Array.isArray(communicationStyles)
+                        ? communicationStyles.map((style) => ({
+                            label: style.label,
+                            value: style.value,
+                          }))
+                        : []
+                    }
                     size="xl"
                     zIndex={2000}
                   />
@@ -628,7 +657,7 @@ export default function OnboardingScreen() {
                         size="lg"
                       >
                         <ButtonText
-                          className={`text-md capitalize ${
+                          className={`text-sm capitalize ${
                             value === option ? "text-white" : "text-primary-500"
                           }`}
                         >
@@ -654,7 +683,7 @@ export default function OnboardingScreen() {
   };
 
   return (
-    <Box className="flex-1 bg-background-0">
+    <Box className="flex-1 bg-background-0 relative">
       <ScrollView className="flex-1 px-6">
         <VStack space="xl" className="py-12">
           {/* Header with Logo */}
@@ -679,41 +708,41 @@ export default function OnboardingScreen() {
 
           {/* Current Step Content */}
           {renderStep()}
-
-          {/* Navigation Buttons */}
-          <HStack space="md" className="mt-8">
-            {currentStep > 1 && (
-              <Button
-                variant="outline"
-                onPress={prevStep}
-                className="flex-1 border-primary-300"
-                size="lg"
-              >
-                <ButtonText className="text-primary-500 text-lg">
-                  Back
-                </ButtonText>
-              </Button>
-            )}
-
-            <Button
-              onPress={
-                currentStep === TOTAL_STEPS ? handleSubmit(onSubmit) : nextStep
-              }
-              className="flex-1 bg-primary-500"
-              isDisabled={updateProfileMutation.isPending}
-              size="lg"
-            >
-              <ButtonText className="text-white text-lg font-semibold">
-                {currentStep === TOTAL_STEPS
-                  ? updateProfileMutation.isPending
-                    ? "Completing..."
-                    : "Complete"
-                  : "Next"}
-              </ButtonText>
-            </Button>
-          </HStack>
         </VStack>
       </ScrollView>
+      {/* Navigation Buttons */}
+      <HStack
+        space="md"
+        className="mt-8 absolute bottom-10 left-0 right-0 px-6"
+      >
+        {currentStep > 1 && (
+          <Button
+            variant="outline"
+            onPress={prevStep}
+            className="flex-1 border-primary-300 rounded-xl"
+            size="lg"
+          >
+            <ButtonText className="text-primary-500 text-lg">Back</ButtonText>
+          </Button>
+        )}
+
+        <Button
+          onPress={
+            currentStep === TOTAL_STEPS ? handleSubmit(onSubmit) : nextStep
+          }
+          className="flex-1 bg-primary-500 rounded-xl"
+          isDisabled={updateProfileMutation.isPending}
+          size="lg"
+        >
+          <ButtonText className="text-white text-lg font-semibold">
+            {currentStep === TOTAL_STEPS
+              ? updateProfileMutation.isPending
+                ? "Completing..."
+                : "Complete"
+              : "Next"}
+          </ButtonText>
+        </Button>
+      </HStack>
     </Box>
   );
 }

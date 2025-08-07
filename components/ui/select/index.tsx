@@ -2,26 +2,26 @@ import { PrimitiveIcon, UIIcon } from '@gluestack-ui/icon';
 import type { VariantProps } from '@gluestack-ui/nativewind-utils';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import {
-  useStyleContext,
-  withStyleContext,
+    useStyleContext,
+    withStyleContext,
 } from '@gluestack-ui/nativewind-utils/withStyleContext';
 import { createSelect } from '@gluestack-ui/select';
 import { cssInterop } from 'nativewind';
 import React from 'react';
 import { Pressable, TextInput, View } from 'react-native';
 import {
-  Actionsheet,
-  ActionsheetBackdrop,
-  ActionsheetContent,
-  ActionsheetDragIndicator,
-  ActionsheetDragIndicatorWrapper,
-  ActionsheetFlatList,
-  ActionsheetItem,
-  ActionsheetItemText,
-  ActionsheetScrollView,
-  ActionsheetSectionHeaderText,
-  ActionsheetSectionList,
-  ActionsheetVirtualizedList,
+    Actionsheet,
+    ActionsheetBackdrop,
+    ActionsheetContent,
+    ActionsheetDragIndicator,
+    ActionsheetDragIndicatorWrapper,
+    ActionsheetFlatList,
+    ActionsheetItem,
+    ActionsheetItemText,
+    ActionsheetScrollView,
+    ActionsheetSectionHeaderText,
+    ActionsheetSectionList,
+    ActionsheetVirtualizedList,
 } from './select-actionsheet';
 
 const SelectTriggerWrapper = React.forwardRef<
@@ -70,7 +70,7 @@ const selectTriggerStyle = tva({
 });
 
 const selectInputStyle = tva({
-  base: 'py-auto px-3 placeholder:text-typography-500 web:w-full h-full text-typography-900 pointer-events-none web:outline-none ios:leading-[0px]',
+  base: 'py-auto px-3 placeholder:text-typography-500 web:w-full h-full text-typography-0 pointer-events-none web:outline-none ios:leading-[0px]',
   parentVariants: {
     size: {
       xl: 'text-xl',
@@ -257,9 +257,9 @@ const SelectSectionList = UISelect.SectionList;
 const SelectSectionHeaderText = UISelect.SectionHeaderText;
 
 export {
-  Select, SelectBackdrop,
-  SelectContent,
-  SelectDragIndicator,
-  SelectDragIndicatorWrapper, SelectFlatList, SelectIcon, SelectInput, SelectItem, SelectPortal, SelectScrollView, SelectSectionHeaderText, SelectSectionList, SelectTrigger, SelectVirtualizedList
+    Select, SelectBackdrop,
+    SelectContent,
+    SelectDragIndicator,
+    SelectDragIndicatorWrapper, SelectFlatList, SelectIcon, SelectInput, SelectItem, SelectPortal, SelectScrollView, SelectSectionHeaderText, SelectSectionList, SelectTrigger, SelectVirtualizedList
 };
 

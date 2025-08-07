@@ -2,16 +2,17 @@ import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
-  ActivityIndicator,
-  FlatList,
-  Keyboard,
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  StatusBar,
-  TextInput,
-  TouchableWithoutFeedback,
-  View,
+    ActivityIndicator,
+    FlatList,
+    Image,
+    Keyboard,
+    KeyboardAvoidingView,
+    Platform,
+    Pressable,
+    StatusBar,
+    TextInput,
+    TouchableWithoutFeedback,
+    View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -19,6 +20,7 @@ import { Box } from "@/components/ui/box";
 import { HStack } from "@/components/ui/hstack";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
+import { useTheme } from "@/hooks/useTheme";
 import { useAuth } from "@/lib/auth-context";
 import { ChatService } from "@/lib/chat-service";
 import { Message } from "@/lib/supabase";
@@ -32,7 +34,11 @@ interface ChatMessage {
 }
 
 export default function ChatScreen() {
-  const { id: matchId, partnerId, partnerName } = useLocalSearchParams<{
+  const {
+    id: matchId,
+    partnerId,
+    partnerName,
+  } = useLocalSearchParams<{
     id: string;
     partnerId?: string;
     partnerName?: string;
@@ -43,6 +49,7 @@ export default function ChatScreen() {
   const insets = useSafeAreaInsets();
   const flatListRef = useRef<FlatList>(null);
   const inputRef = useRef<TextInput>(null);
+  const { colors } = useTheme();
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -107,7 +114,8 @@ export default function ChatScreen() {
 
   // Send a message
   const sendMessage = async () => {
-    if (!actualChatId || !currentUserId || !newMessage.trim() || !partnerId) return;
+    if (!actualChatId || !currentUserId || !newMessage.trim() || !partnerId)
+      return;
 
     const messageText = newMessage.trim();
     setNewMessage(""); // Clear input immediately
@@ -147,7 +155,7 @@ export default function ChatScreen() {
   if (isLoading) {
     return (
       <Box className="flex-1 bg-background-0 justify-center items-center">
-        <ActivityIndicator size="large" color="#4AC3C7" />
+        <ActivityIndicator size="large" color={colors.primary[500]} />
         <Text className="text-typography-400 mt-4">Loading chat...</Text>
       </Box>
     );
@@ -168,19 +176,19 @@ export default function ChatScreen() {
     <Box className={`px-4 py-2 ${item.isOwn ? "items-end" : "items-start"}`}>
       <Box
         className={`rounded-lg px-3 py-2 max-w-[80%] ${
-          item.isOwn ? "bg-primary-500" : "bg-background-950"
+          item.isOwn ? "bg-primary-500" : "bg-background-200"
         }`}
       >
         <Text
-          className={`text-sm ${
+          className={`text-xl ${
             item.isOwn ? "text-white" : "text-typography-0"
           }`}
         >
           {item.text}
         </Text>
         <Text
-          className={`text-xs mt-1 ${
-            item.isOwn ? "text-primary-100" : "text-typography-400"
+          className={`text-md mt-1 ${
+            item.isOwn ? "text-primary-100" : "text-typography-500"
           }`}
         >
           {item.createdAt.toLocaleTimeString([], {
@@ -193,13 +201,16 @@ export default function ChatScreen() {
   );
 
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <Box className="flex-1 bg-background-950">
-        <StatusBar barStyle="light-content" backgroundColor="#1f2937" />
+    <TouchableWithoutFeedback>
+      <Box className="flex-1 bg-background-0">
+        <StatusBar
+          barStyle="dark-content"
+          backgroundColor={colors.background[100]}
+        />
 
         {/* Header with proper safe area handling */}
         <Box
-          className="bg-background-950 border-b border-outline-200"
+          className="bg-background-100 border-b border-outline-200"
           style={{
             paddingTop: insets.top,
             paddingBottom: 16,
@@ -219,7 +230,7 @@ export default function ChatScreen() {
                 alignItems: "center",
               }}
             >
-              <Text style={{ fontSize: 20, color: "#ffffff" }}>‹</Text>
+              <Ionicons name="arrow-back" size={24} color={colors.typography[0]} />
             </Pressable>
 
             {/* User avatar */}
@@ -228,12 +239,15 @@ export default function ChatScreen() {
                 width: 40,
                 height: 40,
                 borderRadius: 20,
-                backgroundColor: "#4AC3C7",
+                backgroundColor: colors.primary[500],
                 justifyContent: "center",
                 alignItems: "center",
               }}
             >
-              <Text style={{ fontSize: 16, color: "white" }}>👤</Text>
+              <Image
+                source={require("@/assets/images/chick.png")}
+                style={{ width: 30, height: 30 }}
+              />
             </View>
 
             {/* User info */}
@@ -278,7 +292,7 @@ export default function ChatScreen() {
 
           {/* Input with proper keyboard handling */}
           <Box
-            className="bg-background-950 border-t border-outline-200"
+            className="bg-background-100 border-t border-outline-200"
             style={{
               paddingHorizontal: 16,
               paddingTop: 12,
@@ -291,11 +305,11 @@ export default function ChatScreen() {
                 value={newMessage}
                 onChangeText={setNewMessage}
                 placeholder="Type a message..."
-                placeholderTextColor="#9CA3AF"
+                placeholderTextColor={colors.typography[500]}
                 style={{
                   flex: 1,
-                  backgroundColor: "#1f2937",
-                  color: "#ffffff",
+                  backgroundColor: colors.background[200],
+                  color: colors.typography[900],
                   paddingHorizontal: 12,
                   paddingVertical: 8,
                   borderRadius: 20,
@@ -304,7 +318,7 @@ export default function ChatScreen() {
                   textAlignVertical: "center",
                   fontSize: 16,
                   borderWidth: 1,
-                  borderColor: "#374151",
+                  borderColor: colors.outline[300],
                 }}
                 multiline
                 maxLength={500}
@@ -320,7 +334,9 @@ export default function ChatScreen() {
                   height: 50,
                   borderRadius: "50%",
                   padding: 10,
-                  backgroundColor: newMessage.trim() ? "#4AC3C7" : "#374151",
+                  backgroundColor: newMessage.trim()
+                    ? colors.primary[500]
+                    : colors.outline[300],
                   justifyContent: "center",
                   alignItems: "center",
                   marginLeft: 8,

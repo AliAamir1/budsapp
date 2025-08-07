@@ -15,6 +15,7 @@ import { Heading } from "@/components/ui/heading";
 import { HStack } from "@/components/ui/hstack";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
+import { useTheme } from "@/hooks/useTheme";
 import { apiClient } from "@/lib/api-client";
 import { useAuth } from "@/lib/auth-context";
 import { Match } from "@/lib/types";
@@ -23,6 +24,7 @@ export default function ChatsScreen() {
   const router = useRouter();
   const { getCurrentUserId, user } = useAuth();
   const currentUserId = getCurrentUserId();
+  const { colors } = useTheme();
   const [matches, setMatches] = useState<Match[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -73,7 +75,7 @@ export default function ChatsScreen() {
         style={{ flex: 1 }}
       >
         <Pressable onPress={() => handleMatchPress(match)}>
-          <Box className="bg-background-950 rounded-xl p-4 border border-outline-200 mb-3">
+          <Box className="bg-background-0 rounded-xl p-4 border border-outline-200 mb-3">
             <HStack space="md" className="items-center">
               {/* Profile Avatar */}
               <View
@@ -81,7 +83,7 @@ export default function ChatsScreen() {
                   width: 60,
                   height: 60,
                   borderRadius: 30,
-                  backgroundColor: "#4AC3C7",
+                  backgroundColor: colors.primary[500],
                   justifyContent: "center",
                   alignItems: "center",
                 }}
@@ -97,7 +99,7 @@ export default function ChatsScreen() {
                 <Text className="text-typography-0 text-lg font-semibold">
                   {partnerProfile.full_name || "Study Partner"}
                 </Text>
-                <Text className="text-typography-400 text-sm">
+                <Text className="text-typography-500 text-sm">
                   Matched on {new Date(match.matched_at).toLocaleDateString()}
                 </Text>
                 <Text className="text-typography-400 text-xs">

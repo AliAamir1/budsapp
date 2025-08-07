@@ -5,17 +5,18 @@ import { Platform } from "react-native";
 import { HapticTab } from "@/components/HapticTab";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import TabBarBackground from "@/components/ui/TabBarBackground";
-import { Colors } from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
+import { useTheme } from "@/hooks/useTheme";
 import Ionicons from "@expo/vector-icons/Ionicons";
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
-
+  const { colors } = useTheme();
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? "light"].tint,
+        tabBarActiveTintColor: colors.primary[500], // Use theme primary color
+        tabBarInactiveTintColor: colors.typography[400], // Use theme gray for inactive
         headerShown: false,
         tabBarButton: HapticTab,
         tabBarBackground: TabBarBackground,
@@ -49,7 +50,11 @@ export default function TabLayout() {
         options={{
           title: "Chats",
           tabBarIcon: ({ color }) => (
-            <Ionicons size={28} name="chatbox-ellipses" color={color} />
+            <Ionicons
+              size={28}
+              name="chatbox-ellipses"
+              color={color}
+            />
           ),
         }}
       />
@@ -58,7 +63,11 @@ export default function TabLayout() {
         options={{
           title: "Profile",
           tabBarIcon: ({ color }) => (
-            <Ionicons size={28} name="person-circle" color={color} />
+            <Ionicons
+              size={28}
+              name="person-circle"
+              color={color}
+            />
           ),
         }}
       />
