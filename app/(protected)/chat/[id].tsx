@@ -1,3 +1,20 @@
+import { Ionicons } from "@expo/vector-icons";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import {
+  ActivityIndicator,
+  FlatList,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  StatusBar,
+  TextInput,
+  TouchableWithoutFeedback,
+  View,
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+
 import { Box } from "@/components/ui/box";
 import { HStack } from "@/components/ui/hstack";
 import { Text } from "@/components/ui/text";
@@ -5,22 +22,7 @@ import { VStack } from "@/components/ui/vstack";
 import { useAuth } from "@/lib/auth-context";
 import { ChatService } from "@/lib/chat-service";
 import { Message, supabase } from "@/lib/supabase";
-import { Ionicons } from "@expo/vector-icons";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useCallback, useEffect, useState } from "react";
-import {
-    ActivityIndicator,
-    FlatList,
-    KeyboardAvoidingView,
-    Platform,
-    Pressable,
-    TextInput,
-    View,
-} from "react-native";
-import {
-    SafeAreaView,
-    useSafeAreaInsets,
-} from "react-native-safe-area-context";
+
 interface ChatMessage {
   id: string;
   text: string;
@@ -38,6 +40,8 @@ export default function ChatScreen() {
   const { getCurrentUserId } = useAuth();
   const currentUserId = getCurrentUserId();
   const insets = useSafeAreaInsets();
+  const flatListRef = useRef<FlatList>(null);
+  const inputRef = useRef<TextInput>(null);
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -45,6 +49,7 @@ export default function ChatScreen() {
   const [chatInfo, setChatInfo] = useState<any>(null);
   const [newMessage, setNewMessage] = useState("");
   const [isTemporaryChat, setIsTemporaryChat] = useState(false);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
 
   // Convert Supabase message to ChatMessage
   const convertMessage = (message: Message): ChatMessage => ({
@@ -179,6 +184,11 @@ export default function ChatScreen() {
     }
   };
 
+  const handleBackPress = () => {
+    Keyboard.dismiss();
+    router.back();
+  };
+
   if (isLoading) {
     return (
       <Box className="flex-1 bg-background-0 justify-center items-center">
@@ -228,15 +238,34 @@ export default function ChatScreen() {
   );
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
-      <Box className="flex-1 bg-background-0">
-        {/* Header with user details */}
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <Box className="flex-1 bg-background-950">
+        <StatusBar barStyle="light-content" backgroundColor="#1f2937" />
+
+        {/* Header with proper safe area handling */}
         {(chatInfo || isTemporaryChat) && (
-          <Box className="bg-background-950 px-4 py-3 border-b border-outline-200">
+          <Box
+            className="bg-background-950 border-b border-outline-200"
+            style={{
+              paddingTop: insets.top,
+              paddingBottom: 16,
+              paddingHorizontal: 16,
+            }}
+          >
             <HStack space="md" className="items-center">
-              {/* Back button */}
-              <Pressable onPress={() => router.back()}>
-                <Text className="text-typography-400 text-xl">‹</Text>
+              {/* Back button with proper icon */}
+              <Pressable
+                onPress={handleBackPress}
+                style={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: 20,
+                  backgroundColor: "rgba(255, 255, 255, 0.1)",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <Text style={{ fontSize: 20, color: "#ffffff" }}>‹</Text>
               </Pressable>
 
               {/* User avatar */}
@@ -270,25 +299,46 @@ export default function ChatScreen() {
           </Box>
         )}
 
-        {/* Messages */}
-        <FlatList
-          data={messages}
-          renderItem={renderMessage}
-          keyExtractor={(item) => item.id}
-          inverted
-          className="flex-1"
-          contentContainerStyle={{ paddingVertical: 10 }}
-        />
-
-        {/* Input with proper keyboard handling */}
-
+        {/* Messages with proper keyboard handling */}
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : "height"}
-          keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
+          style={{ flex: 1 }}
+          keyboardVerticalOffset={Platform.OS === "ios" ? 12 : 0}
         >
-          <Box className="bg-background-950 px-4 py-3 border-t border-outline-200 pb-5">
-            <HStack space="sm" className="items-center">
+          <FlatList
+            ref={flatListRef}
+            data={messages}
+            renderItem={renderMessage}
+            keyExtractor={(item) => item.id}
+            inverted
+            className="flex-1 bg-background-0"
+            contentContainerStyle={{
+              paddingVertical: 10,
+              flexGrow: 1,
+            }}
+            showsVerticalScrollIndicator={false}
+            onContentSizeChange={() => {
+              if (messages.length > 0) {
+                flatListRef.current?.scrollToOffset({
+                  offset: 0,
+                  animated: true,
+                });
+              }
+            }}
+          />
+
+          {/* Input with proper keyboard handling */}
+          <Box
+            className="bg-background-950 border-t border-outline-200"
+            style={{
+              paddingHorizontal: 16,
+              paddingTop: 12,
+              paddingBottom: insets.bottom + 12,
+            }}
+          >
+            <HStack className="items-center">
               <TextInput
+                ref={inputRef}
                 value={newMessage}
                 onChangeText={setNewMessage}
                 placeholder="Type a message..."
@@ -298,46 +348,41 @@ export default function ChatScreen() {
                   backgroundColor: "#1f2937",
                   color: "#ffffff",
                   paddingHorizontal: 12,
-                  paddingVertical: 6,
-                  borderRadius: 8,
-                  minHeight: 50,
+                  paddingVertical: 8,
+                  borderRadius: 20,
+                  minHeight: 40,
                   maxHeight: 100,
                   textAlignVertical: "center",
                   fontSize: 16,
+                  borderWidth: 1,
+                  borderColor: "#374151",
                 }}
                 multiline
                 maxLength={500}
+                returnKeyType="send"
+                onSubmitEditing={sendMessage}
+                blurOnSubmit={false}
               />
               <Pressable
                 onPress={sendMessage}
                 disabled={!newMessage.trim()}
                 style={{
-                  paddingHorizontal: 8,
-                  paddingVertical: 8,
-                  borderRadius: 100,
-                  backgroundColor: newMessage.trim() ? "#4AC3C7" : "#374151",
-                  marginLeft: 8,
-                  height: 50,
                   width: 50,
+                  height: 50,
+                  borderRadius: "50%",
+                  padding: 10,
+                  backgroundColor: newMessage.trim() ? "#4AC3C7" : "#374151",
                   justifyContent: "center",
                   alignItems: "center",
+                  marginLeft: 8,
                 }}
               >
                 <Ionicons name="send" size={25} color="white" />
-                {/* <Text
-                  style={{
-                    fontWeight: "bold",
-                    color: newMessage.trim() ? "white" : "#9CA3AF",
-                    fontSize: 16,
-                  }}
-                >
-                  Send
-                </Text> */}
               </Pressable>
             </HStack>
           </Box>
         </KeyboardAvoidingView>
       </Box>
-    </SafeAreaView>
+    </TouchableWithoutFeedback>
   );
 }
