@@ -1,3 +1,12 @@
+import { Box } from "@/components/ui/box";
+import { Heading } from "@/components/ui/heading";
+import { HStack } from "@/components/ui/hstack";
+import { VStack } from "@/components/ui/vstack";
+import { useAuth } from "@/lib/auth-context";
+import { ChatService } from "@/lib/chat-service";
+import { useCreateMatch, usePotentialMatches } from "@/lib/queries";
+import AntDesign from "@expo/vector-icons/AntDesign";
+import Entypo from "@expo/vector-icons/Entypo";
 import React, { useState } from "react";
 import { Dimensions, Image, Text, View } from "react-native";
 import { PanGestureHandler } from "react-native-gesture-handler";
@@ -8,14 +17,6 @@ import Animated, {
   useSharedValue,
   withSpring,
 } from "react-native-reanimated";
-
-import { Box } from "@/components/ui/box";
-import { Heading } from "@/components/ui/heading";
-import { HStack } from "@/components/ui/hstack";
-import { VStack } from "@/components/ui/vstack";
-import { useAuth } from "@/lib/auth-context";
-import { ChatService } from "@/lib/chat-service";
-import { useCreateMatch, usePotentialMatches } from "@/lib/queries";
 
 const { width: screenWidth } = Dimensions.get("window");
 const SWIPE_THRESHOLD = screenWidth * 0.3;
@@ -187,18 +188,18 @@ const UserCard: React.FC<UserCardProps> = ({ user, index, onSwipe, isTop }) => {
 
   return (
     <PanGestureHandler onGestureEvent={gestureHandler}>
-              <Animated.View
-          style={[
-            {
-              position: "absolute",
-              width: screenWidth * 0.85,
-              height: 420,
-              alignSelf: "center",
-              top: 100,
-            },
-            animatedStyle,
-          ]}
-        >
+      <Animated.View
+        style={[
+          {
+            position: "absolute",
+            width: screenWidth * 0.80,
+            height: 420,
+            alignSelf: "center",
+            top: 50,
+          },
+          animatedStyle,
+        ]}
+      >
         <Animated.View style={[cardAnimatedStyle]}>
           <Box className="rounded-3xl p-6 border-4   shadow-lg">
             {/* Swipe Feedback Circles */}
@@ -219,11 +220,7 @@ const UserCard: React.FC<UserCardProps> = ({ user, index, onSwipe, isTop }) => {
                 leftCircleAnimatedStyle,
               ]}
             >
-              <Text
-                style={{ color: "white", fontSize: 32, fontWeight: "bold" }}
-              >
-                ♥
-              </Text>
+              <Entypo name="heart" size={35} color="white" />
             </Animated.View>
 
             <Animated.View
@@ -243,11 +240,7 @@ const UserCard: React.FC<UserCardProps> = ({ user, index, onSwipe, isTop }) => {
                 rightCircleAnimatedStyle,
               ]}
             >
-              <Text
-                style={{ color: "white", fontSize: 32, fontWeight: "bold" }}
-              >
-                ✕
-              </Text>
+              <AntDesign name="close" size={35} color="white" />
             </Animated.View>
 
             {/* Chick Avatar */}
@@ -391,7 +384,7 @@ export default function HomeScreen() {
         {
           onSuccess: async () => {
             console.log("Match created successfully");
-            
+
             // Create a chat for the new match
             try {
               await ChatService.getOrCreateChat(currentUserId, userId);
@@ -491,7 +484,7 @@ export default function HomeScreen() {
       </VStack>
 
       {/* Cards Stack */}
-      <View style={{ flex: 1 }}>
+      <View style={{ flex: 1, height: "100%" }}>
         {visibleUsers.map((user, index) => (
           <UserCard
             key={user.user_id}
@@ -504,14 +497,14 @@ export default function HomeScreen() {
       </View>
 
       {/* Instructions */}
-      <Box className="absolute bottom-20 left-0 right-0 px-6">
+      <Box className="absolute bottom-10 left-0 right-0 px-6">
         <HStack className="justify-between items-center">
           <VStack className="items-center">
-            <Text className="text-2xl">👈</Text>
+            <Text className="text-5xl">👈</Text>
             <Text className="text-typography-200 text-sm">Pass</Text>
           </VStack>
           <VStack className="items-center">
-            <Text className="text-2xl">👉</Text>
+            <Text className="text-5xl">👉</Text>
             <Text className="text-typography-200 text-sm">Match</Text>
           </VStack>
         </HStack>

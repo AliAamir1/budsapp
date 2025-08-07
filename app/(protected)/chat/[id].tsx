@@ -1,16 +1,26 @@
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, FlatList, KeyboardAvoidingView, Platform, Pressable, TextInput, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-
-import { Box } from '@/components/ui/box';
-import { HStack } from '@/components/ui/hstack';
-import { Text } from '@/components/ui/text';
-import { VStack } from '@/components/ui/vstack';
-import { useAuth } from '@/lib/auth-context';
-import { ChatService } from '@/lib/chat-service';
-import { Message, supabase } from '@/lib/supabase';
-
+import { Box } from "@/components/ui/box";
+import { HStack } from "@/components/ui/hstack";
+import { Text } from "@/components/ui/text";
+import { VStack } from "@/components/ui/vstack";
+import { useAuth } from "@/lib/auth-context";
+import { ChatService } from "@/lib/chat-service";
+import { Message, supabase } from "@/lib/supabase";
+import { Ionicons } from "@expo/vector-icons";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import React, { useCallback, useEffect, useState } from "react";
+import {
+    ActivityIndicator,
+    FlatList,
+    KeyboardAvoidingView,
+    Platform,
+    Pressable,
+    TextInput,
+    View,
+} from "react-native";
+import {
+    SafeAreaView,
+    useSafeAreaInsets,
+} from "react-native-safe-area-context";
 interface ChatMessage {
   id: string;
   text: string;
@@ -20,7 +30,10 @@ interface ChatMessage {
 }
 
 export default function ChatScreen() {
-  const { id: chatId, userId } = useLocalSearchParams<{ id: string; userId?: string }>();
+  const { id: chatId, userId } = useLocalSearchParams<{
+    id: string;
+    userId?: string;
+  }>();
   const router = useRouter();
   const { getCurrentUserId } = useAuth();
   const currentUserId = getCurrentUserId();
@@ -30,7 +43,7 @@ export default function ChatScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [chatInfo, setChatInfo] = useState<any>(null);
-  const [newMessage, setNewMessage] = useState('');
+  const [newMessage, setNewMessage] = useState("");
   const [isTemporaryChat, setIsTemporaryChat] = useState(false);
 
   // Convert Supabase message to ChatMessage
@@ -47,7 +60,7 @@ export default function ChatScreen() {
     if (!chatId || !currentUserId) return;
 
     // Check if this is a temporary chat
-    if (chatId.startsWith('temp_')) {
+    if (chatId.startsWith("temp_")) {
       setIsTemporaryChat(true);
       setIsLoading(false);
       return;
@@ -55,23 +68,23 @@ export default function ChatScreen() {
 
     try {
       setIsLoading(true);
-      
+
       // Get chat info first
       const { data: chatData, error: chatError } = await supabase
-        .from('chat')
-        .select('*')
-        .eq('id', chatId)
+        .from("chat")
+        .select("*")
+        .eq("id", chatId)
         .single();
-      
+
       if (chatError) throw chatError;
       setChatInfo(chatData);
-      
+
       // Get messages
       const chatMessages = await ChatService.getChatMessages(chatId);
       const giftedMessages = chatMessages.map(convertMessage);
       setMessages(giftedMessages);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load messages');
+      setError(err instanceof Error ? err.message : "Failed to load messages");
     } finally {
       setIsLoading(false);
     }
@@ -85,9 +98,15 @@ export default function ChatScreen() {
 
     // Only subscribe to real-time messages if it's not a temporary chat
     if (!isTemporaryChat) {
-      const subscription = ChatService.subscribeToChatMessages(chatId, (newMessage) => {
-        setMessages(prevMessages => [convertMessage(newMessage), ...prevMessages]);
-      });
+      const subscription = ChatService.subscribeToChatMessages(
+        chatId,
+        (newMessage) => {
+          setMessages((prevMessages) => [
+            convertMessage(newMessage),
+            ...prevMessages,
+          ]);
+        }
+      );
 
       return () => {
         subscription.unsubscribe();
@@ -100,8 +119,8 @@ export default function ChatScreen() {
     if (!chatId || !currentUserId || !newMessage.trim()) return;
 
     const messageText = newMessage.trim();
-    setNewMessage(''); // Clear input immediately
-    
+    setNewMessage(""); // Clear input immediately
+
     try {
       // Optimistically add the message to the UI
       const optimisticMessage: ChatMessage = {
@@ -111,33 +130,37 @@ export default function ChatScreen() {
         senderId: currentUserId,
         isOwn: true,
       };
-      setMessages(prevMessages => [optimisticMessage, ...prevMessages]);
+      setMessages((prevMessages) => [optimisticMessage, ...prevMessages]);
 
       let actualChatId = chatId;
       let receiverId: string;
 
       if (isTemporaryChat && userId) {
         // Create the actual chat first
-        const newChat = await ChatService.getOrCreateChat(currentUserId, userId);
+        const newChat = await ChatService.getOrCreateChat(
+          currentUserId,
+          userId
+        );
         actualChatId = newChat.id;
         receiverId = userId;
-        
+
         // Update the URL to reflect the real chat ID
         router.replace({
-          pathname: '/(protected)/chat/[id]',
-          params: { id: newChat.id }
+          pathname: "/(protected)/chat/[id]",
+          params: { id: newChat.id },
         });
-        
+
         // Update local state
         setChatInfo(newChat);
         setIsTemporaryChat(false);
       } else if (chatInfo) {
         // Existing chat
-        receiverId = chatInfo.recipient_one === currentUserId 
-          ? chatInfo.recipient_two 
-          : chatInfo.recipient_one;
+        receiverId =
+          chatInfo.recipient_one === currentUserId
+            ? chatInfo.recipient_two
+            : chatInfo.recipient_one;
       } else {
-        throw new Error('No receiver ID available');
+        throw new Error("No receiver ID available");
       }
 
       // Send the message to Supabase
@@ -148,9 +171,11 @@ export default function ChatScreen() {
         messageText
       );
     } catch (err) {
-      console.error('Failed to send message:', err);
+      console.error("Failed to send message:", err);
       // Remove the optimistic message on error
-      setMessages(prevMessages => prevMessages.filter(m => m.id !== Date.now().toString()));
+      setMessages((prevMessages) =>
+        prevMessages.filter((m) => m.id !== Date.now().toString())
+      );
     }
   };
 
@@ -169,152 +194,150 @@ export default function ChatScreen() {
         <Text className="text-error-500 text-lg text-center mb-4">
           Failed to load chat
         </Text>
-        <Text className="text-typography-400 text-center">
-          {error}
-        </Text>
+        <Text className="text-typography-400 text-center">{error}</Text>
       </Box>
     );
   }
 
   const renderMessage = ({ item }: { item: ChatMessage }) => (
-    <Box className={`px-4 py-2 ${item.isOwn ? 'items-end' : 'items-start'}`}>
-      <Box 
+    <Box className={`px-4 py-2 ${item.isOwn ? "items-end" : "items-start"}`}>
+      <Box
         className={`rounded-lg px-3 py-2 max-w-[80%] ${
-          item.isOwn 
-            ? 'bg-primary-500' 
-            : 'bg-background-950'
+          item.isOwn ? "bg-primary-500" : "bg-background-950"
         }`}
       >
-        <Text 
+        <Text
           className={`text-sm ${
-            item.isOwn 
-              ? 'text-white' 
-              : 'text-typography-0'
+            item.isOwn ? "text-white" : "text-typography-0"
           }`}
         >
           {item.text}
         </Text>
-        <Text 
+        <Text
           className={`text-xs mt-1 ${
-            item.isOwn 
-              ? 'text-primary-100' 
-              : 'text-typography-400'
+            item.isOwn ? "text-primary-100" : "text-typography-400"
           }`}
         >
-          {item.createdAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+          {item.createdAt.toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          })}
         </Text>
       </Box>
     </Box>
   );
 
   return (
-    <Box className="flex-1 bg-background-0">
-      {/* Header with user details */}
-      {(chatInfo || isTemporaryChat) && (
-        <Box 
-          className="bg-background-950 px-4 py-3 border-b border-outline-200"
-          style={{ paddingTop: insets.top + 16 }}
-        >
-          <HStack space="md" className="items-center">
-            {/* Back button */}
-            <Pressable onPress={() => router.back()}>
-              <Text className="text-typography-400 text-xl">‹</Text>
-            </Pressable>
-            
-            {/* User avatar */}
-            <View
-              style={{
-                width: 40,
-                height: 40,
-                borderRadius: 20,
-                backgroundColor: '#4AC3C7',
-                justifyContent: 'center',
-                alignItems: 'center',
-              }}
-            >
-              <Text style={{ fontSize: 16, color: 'white' }}>👤</Text>
-            </View>
-            
-            {/* User info */}
-            <VStack space="xs" className="flex-1">
-              <Text className="text-typography-0 text-lg font-semibold">
-                {isTemporaryChat ? 'New Chat' : (chatInfo?.recipient_one_name || chatInfo?.recipient_two_name || 'Study Partner')}
-              </Text>
-              <Text className="text-typography-400 text-sm">
-                {isTemporaryChat ? 'Start a conversation' : 'Online'}
-              </Text>
-            </VStack>
-          </HStack>
-        </Box>
-      )}
-      
-      {/* Messages */}
-      <FlatList
-        data={messages}
-        renderItem={renderMessage}
-        keyExtractor={(item) => item.id}
-        inverted
-        className="flex-1"
-        contentContainerStyle={{ paddingVertical: 10 }}
-      />
-      
-      {/* Input with proper keyboard handling */}
-      <KeyboardAvoidingView 
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
-        style={{ flex: 1 }}
-      >
-        <Box 
-          className="bg-background-950 px-4 py-3 border-t border-outline-200"
-          style={{ paddingBottom: insets.bottom + 8 }}
-        >
-          <HStack space="sm" className="items-end">
-            <TextInput
-              value={newMessage}
-              onChangeText={setNewMessage}
-              placeholder="Type a message..."
-              placeholderTextColor="#9CA3AF"
-              style={{
-                flex: 1,
-                backgroundColor: '#1f2937',
-                color: '#ffffff',
-                paddingHorizontal: 12,
-                paddingVertical: 6,
-                borderRadius: 8,
-                minHeight: 32,
-                maxHeight: 100,
-                textAlignVertical: 'center',
-                fontSize: 16,
-              }}
-              multiline
-              maxLength={500}
-            />
-            <Pressable
-              onPress={sendMessage}
-              disabled={!newMessage.trim()}
-              style={{
-                paddingHorizontal: 16,
-                paddingVertical: 8,
-                borderRadius: 8,
-                backgroundColor: newMessage.trim() ? '#4AC3C7' : '#374151',
-                marginLeft: 8,
-                minHeight: 32,
-                justifyContent: 'center',
-              }}
-            >
-              <Text 
+    <SafeAreaView style={{ flex: 1 }}>
+      <Box className="flex-1 bg-background-0">
+        {/* Header with user details */}
+        {(chatInfo || isTemporaryChat) && (
+          <Box className="bg-background-950 px-4 py-3 border-b border-outline-200">
+            <HStack space="md" className="items-center">
+              {/* Back button */}
+              <Pressable onPress={() => router.back()}>
+                <Text className="text-typography-400 text-xl">‹</Text>
+              </Pressable>
+
+              {/* User avatar */}
+              <View
                 style={{
-                  fontWeight: 'bold',
-                  color: newMessage.trim() ? 'white' : '#9CA3AF',
-                  fontSize: 16,
+                  width: 40,
+                  height: 40,
+                  borderRadius: 20,
+                  backgroundColor: "#4AC3C7",
+                  justifyContent: "center",
+                  alignItems: "center",
                 }}
               >
-                Send
-              </Text>
-            </Pressable>
-          </HStack>
-        </Box>
-      </KeyboardAvoidingView>
-    </Box>
+                <Text style={{ fontSize: 16, color: "white" }}>👤</Text>
+              </View>
+
+              {/* User info */}
+              <VStack space="xs" className="flex-1">
+                <Text className="text-typography-0 text-lg font-semibold">
+                  {isTemporaryChat
+                    ? "New Chat"
+                    : chatInfo?.recipient_one_name ||
+                      chatInfo?.recipient_two_name ||
+                      "Study Partner"}
+                </Text>
+                <Text className="text-typography-400 text-sm">
+                  {isTemporaryChat ? "Start a conversation" : "Online"}
+                </Text>
+              </VStack>
+            </HStack>
+          </Box>
+        )}
+
+        {/* Messages */}
+        <FlatList
+          data={messages}
+          renderItem={renderMessage}
+          keyExtractor={(item) => item.id}
+          inverted
+          className="flex-1"
+          contentContainerStyle={{ paddingVertical: 10 }}
+        />
+
+        {/* Input with proper keyboard handling */}
+
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
+        >
+          <Box className="bg-background-950 px-4 py-3 border-t border-outline-200 pb-5">
+            <HStack space="sm" className="items-center">
+              <TextInput
+                value={newMessage}
+                onChangeText={setNewMessage}
+                placeholder="Type a message..."
+                placeholderTextColor="#9CA3AF"
+                style={{
+                  flex: 1,
+                  backgroundColor: "#1f2937",
+                  color: "#ffffff",
+                  paddingHorizontal: 12,
+                  paddingVertical: 6,
+                  borderRadius: 8,
+                  minHeight: 50,
+                  maxHeight: 100,
+                  textAlignVertical: "center",
+                  fontSize: 16,
+                }}
+                multiline
+                maxLength={500}
+              />
+              <Pressable
+                onPress={sendMessage}
+                disabled={!newMessage.trim()}
+                style={{
+                  paddingHorizontal: 8,
+                  paddingVertical: 8,
+                  borderRadius: 100,
+                  backgroundColor: newMessage.trim() ? "#4AC3C7" : "#374151",
+                  marginLeft: 8,
+                  height: 50,
+                  width: 50,
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <Ionicons name="send" size={25} color="white" />
+                {/* <Text
+                  style={{
+                    fontWeight: "bold",
+                    color: newMessage.trim() ? "white" : "#9CA3AF",
+                    fontSize: 16,
+                  }}
+                >
+                  Send
+                </Text> */}
+              </Pressable>
+            </HStack>
+          </Box>
+        </KeyboardAvoidingView>
+      </Box>
+    </SafeAreaView>
   );
-} 
+}
