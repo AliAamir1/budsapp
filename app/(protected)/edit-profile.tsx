@@ -2,23 +2,32 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { Alert, ScrollView } from 'react-native';
+import { Alert, Image, ScrollView } from 'react-native';
 
 import { Box } from '@/components/ui/box';
 import { Button, ButtonText } from '@/components/ui/button';
+import { DatePicker } from '@/components/ui/date-picker';
 import { FormControl, FormControlError, FormControlErrorText, FormControlLabel, FormControlLabelText } from '@/components/ui/form-control';
 import { Heading } from '@/components/ui/heading';
+import { HStack } from '@/components/ui/hstack';
 import { Input, InputField } from '@/components/ui/input';
-import { Select, SelectContent, SelectInput, SelectItem, SelectTrigger } from '@/components/ui/select';
+import { Select, SelectBackdrop, SelectContent, SelectDragIndicator, SelectDragIndicatorWrapper, SelectIcon, SelectInput, SelectItem, SelectPortal, SelectTrigger } from '@/components/ui/select';
 import { Text } from '@/components/ui/text';
 import { Textarea, TextareaInput } from '@/components/ui/textarea';
 import { VStack } from '@/components/ui/vstack';
 
+
+import { communicationStyles } from '@/consts/communication';
+import { countries } from '@/consts/countries';
+import { courses } from '@/consts/courses';
+import { studySchedules } from '@/consts/studySchedule';
+import { useAuth } from '@/lib/auth-context';
 import { useExams, useUpdateProfile } from '@/lib/queries';
 import { UpdateProfileData, UpdateProfileSchema } from '@/lib/types';
 
 export default function EditProfileScreen() {
   const router = useRouter();
+  const { user, setAuthState } = useAuth();
   const updateProfileMutation = useUpdateProfile();
   const { data: examsData } = useExams();
 
@@ -29,25 +38,31 @@ export default function EditProfileScreen() {
   } = useForm<UpdateProfileData>({
     resolver: zodResolver(UpdateProfileSchema),
     defaultValues: {
-      name: '',
-      gender: undefined,
-      birthdate: '',
-      region: '',
-      course: '',
-      examDate: '',
+      name: user?.name || '',
+      gender: (user?.gender as 'male' | 'female' | 'other') || undefined,
+      birthdate: user?.birthdate || '',
+      region: user?.region || '',
+      course: user?.course || '',
+      examDate: user?.examDate || '',
       partner_preferences: {
-        study_schedule: '',
-        communication_style: '',
+        study_schedule: (user?.partner_preferences as any)?.study_schedule || '',
+        communication_style: (user?.partner_preferences as any)?.communication_style || '',
       },
-      bio: '',
-      is_premium: false,
-      examPreferences: undefined,
+      bio: user?.bio || '',
+      is_premium: user?.is_premium || false,
+      examPreferences: (user?.examPreferences as any) || undefined,
     },
   });
 
   const onSubmit = async (data: UpdateProfileData) => {
     try {
       await updateProfileMutation.mutateAsync(data);
+      
+      // Update auth context with new user data
+      if (user) {
+        setAuthState(true, { ...user, ...data });
+      }
+      
       Alert.alert(
         'Success',
         'Profile updated successfully!',
@@ -66,40 +81,46 @@ export default function EditProfileScreen() {
   return (
     <Box className="flex-1 bg-background-0">
       <ScrollView className="flex-1 px-6 pt-16">
-        <VStack space="lg">
+        <VStack space="xl" className="pb-8">
           {/* Header */}
           <VStack space="md" className="items-center">
-            <Heading size="2xl" className="text-primary-500">
+            <Image
+              source={require("@/assets/images/logo.png")}
+              alt="Buds Logo"
+              style={{ width: 120, height: 60 }}
+            />
+            <Heading size="3xl" className="text-primary-500">
               Edit Profile
             </Heading>
-            <Text className="text-typography-200 text-center">
-              Complete your profile to find better study partners
+            <Text size="lg" className="text-typography-200 text-center">
+              Update your profile to find better study partners
             </Text>
           </VStack>
 
           {/* Form */}
-          <VStack space="lg">
+          <VStack space="2xl">
             {/* Name */}
             <FormControl isInvalid={!!errors.name}>
               <FormControlLabel>
-                <FormControlLabelText className="text-typography-0">Name</FormControlLabelText>
+                <FormControlLabelText className="text-typography-0 text-lg">Name</FormControlLabelText>
               </FormControlLabel>
               <Controller
                 control={control}
                 name="name"
                 render={({ field: { onChange, onBlur, value } }) => (
-                  <Input>
+                  <Input size="xl" className="px-4 rounded-xl">
                     <InputField
                       placeholder="Enter your name"
                       value={value}
                       onChangeText={onChange}
                       onBlur={onBlur}
+                      className="text-lg"
                     />
                   </Input>
                 )}
               />
               <FormControlError>
-                <FormControlErrorText>
+                <FormControlErrorText className="text-lg">
                   {errors.name?.message}
                 </FormControlErrorText>
               </FormControlError>
@@ -108,27 +129,67 @@ export default function EditProfileScreen() {
             {/* Gender */}
             <FormControl isInvalid={!!errors.gender}>
               <FormControlLabel>
-                <FormControlLabelText className="text-typography-0">Gender</FormControlLabelText>
+                <FormControlLabelText className="text-typography-0 text-lg">Gender</FormControlLabelText>
               </FormControlLabel>
               <Controller
                 control={control}
                 name="gender"
                 render={({ field: { onChange, value } }) => (
-                  <Select onValueChange={onChange} selectedValue={value}>
-                    <SelectTrigger>
-                      <SelectInput placeholder="Select gender" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem label="Male" value="male" />
-                      <SelectItem label="Female" value="female" />
-                      <SelectItem label="Other" value="other" />
-                    </SelectContent>
-                  </Select>
+                  <HStack space="md" className="flex-wrap">
+                    {["male", "female", "other"].map((option) => (
+                      <Button
+                        key={option}
+                        variant={value === option ? "solid" : "outline"}
+                        onPress={() => onChange(option)}
+                        className={`flex-1 min-w-[100px] ${
+                          value === option
+                            ? "bg-primary-500"
+                            : "bg-transparent border-primary-300"
+                        }`}
+                        size="lg"
+                      >
+                        <ButtonText
+                          className={`text-lg capitalize ${
+                            value === option ? "text-white" : "text-primary-500"
+                          }`}
+                        >
+                          {option}
+                        </ButtonText>
+                      </Button>
+                    ))}
+                  </HStack>
                 )}
               />
               <FormControlError>
-                <FormControlErrorText>
+                <FormControlErrorText className="text-lg">
                   {errors.gender?.message}
+                </FormControlErrorText>
+              </FormControlError>
+            </FormControl>
+
+            {/* Date of Birth */}
+            <FormControl isInvalid={!!errors.birthdate}>
+              <FormControlLabel>
+                <FormControlLabelText className="text-typography-0 text-lg">Date of Birth</FormControlLabelText>
+              </FormControlLabel>
+              <Controller
+                control={control}
+                name="birthdate"
+                render={({ field: { onChange, value } }) => (
+                  <DatePicker
+                    value={value}
+                    onDateChange={onChange}
+                    placeholder="Select your date of birth"
+                    size="xl"
+                    className="px-4 rounded-xl"
+                    maximumDate={new Date()} // Can't select future dates
+                    minimumDate={new Date(1900, 0, 1)} // Reasonable minimum
+                  />
+                )}
+              />
+              <FormControlError>
+                <FormControlErrorText className="text-lg">
+                  {errors.birthdate?.message}
                 </FormControlErrorText>
               </FormControlError>
             </FormControl>
@@ -136,24 +197,40 @@ export default function EditProfileScreen() {
             {/* Region */}
             <FormControl isInvalid={!!errors.region}>
               <FormControlLabel>
-                <FormControlLabelText className="text-typography-0">Region</FormControlLabelText>
+                <FormControlLabelText className="text-typography-0 text-lg">Country</FormControlLabelText>
               </FormControlLabel>
               <Controller
                 control={control}
                 name="region"
-                render={({ field: { onChange, onBlur, value } }) => (
-                  <Input>
-                    <InputField
-                      placeholder="e.g., North America, Europe"
-                      value={value}
-                      onChangeText={onChange}
-                      onBlur={onBlur}
-                    />
-                  </Input>
+                render={({ field: { onChange, value } }) => (
+                  <Select onValueChange={onChange} selectedValue={value}>
+                    <SelectTrigger size="xl" className="px-4 rounded-xl">
+                      <SelectInput
+                        placeholder="Select your country"
+                        className="text-lg"
+                      />
+                      <SelectIcon className="mr-3" />
+                    </SelectTrigger>
+                    <SelectPortal>
+                      <SelectBackdrop />
+                      <SelectContent>
+                        <SelectDragIndicatorWrapper>
+                          <SelectDragIndicator />
+                        </SelectDragIndicatorWrapper>
+                        {countries.slice(0, 20).map((country) => (
+                          <SelectItem
+                            key={country.country_code}
+                            label={country.name}
+                            value={country.name}
+                          />
+                        ))}
+                      </SelectContent>
+                    </SelectPortal>
+                  </Select>
                 )}
               />
               <FormControlError>
-                <FormControlErrorText>
+                <FormControlErrorText className="text-lg">
                   {errors.region?.message}
                 </FormControlErrorText>
               </FormControlError>
@@ -162,25 +239,68 @@ export default function EditProfileScreen() {
             {/* Course */}
             <FormControl isInvalid={!!errors.course}>
               <FormControlLabel>
-                <FormControlLabelText className="text-typography-0">Course/Exam</FormControlLabelText>
+                <FormControlLabelText className="text-typography-0 text-lg">Course/Exam</FormControlLabelText>
               </FormControlLabel>
               <Controller
                 control={control}
                 name="course"
-                render={({ field: { onChange, onBlur, value } }) => (
-                  <Input>
-                    <InputField
-                      placeholder="e.g., SAT, GRE, MCAT"
-                      value={value}
-                      onChangeText={onChange}
-                      onBlur={onBlur}
-                    />
-                  </Input>
+                render={({ field: { onChange, value } }) => (
+                  <Select onValueChange={onChange} selectedValue={value}>
+                    <SelectTrigger size="xl" className="px-4 rounded-xl">
+                      <SelectInput
+                        placeholder="Select your course"
+                        className="text-lg"
+                      />
+                      <SelectIcon className="mr-3" />
+                    </SelectTrigger>
+                    <SelectPortal>
+                      <SelectBackdrop />
+                      <SelectContent>
+                        <SelectDragIndicatorWrapper>
+                          <SelectDragIndicator />
+                        </SelectDragIndicatorWrapper>
+                        {courses.map((course) => (
+                          <SelectItem
+                            key={course.value}
+                            label={course.label}
+                            value={course.value}
+                          />
+                        ))}
+                      </SelectContent>
+                    </SelectPortal>
+                  </Select>
                 )}
               />
               <FormControlError>
-                <FormControlErrorText>
+                <FormControlErrorText className="text-lg">
                   {errors.course?.message}
+                </FormControlErrorText>
+              </FormControlError>
+            </FormControl>
+
+            {/* Exam Date */}
+            <FormControl isInvalid={!!errors.examDate}>
+              <FormControlLabel>
+                <FormControlLabelText className="text-typography-0 text-lg">Exam Date</FormControlLabelText>
+              </FormControlLabel>
+              <Controller
+                control={control}
+                name="examDate"
+                render={({ field: { onChange, value } }) => (
+                  <DatePicker
+                    value={value}
+                    onDateChange={onChange}
+                    placeholder="Select your exam date"
+                    size="xl"
+                    className="px-4 rounded-xl"
+                    minimumDate={new Date()} // Can't select past dates for exams
+                    maximumDate={new Date(2030, 11, 31)} // Reasonable maximum
+                  />
+                )}
+              />
+              <FormControlError>
+                <FormControlErrorText className="text-lg">
+                  {errors.examDate?.message}
                 </FormControlErrorText>
               </FormControlError>
             </FormControl>
@@ -188,27 +308,37 @@ export default function EditProfileScreen() {
             {/* Study Schedule Preference */}
             <FormControl isInvalid={!!errors.partner_preferences?.study_schedule}>
               <FormControlLabel>
-                <FormControlLabelText className="text-typography-0">Preferred Study Schedule</FormControlLabelText>
+                <FormControlLabelText className="text-typography-0 text-lg">Preferred Study Schedule</FormControlLabelText>
               </FormControlLabel>
               <Controller
                 control={control}
                 name="partner_preferences.study_schedule"
                 render={({ field: { onChange, value } }) => (
                   <Select onValueChange={onChange} selectedValue={value}>
-                    <SelectTrigger>
-                      <SelectInput placeholder="Select study schedule" />
+                    <SelectTrigger size="xl" className="px-4 rounded-xl">
+                      <SelectInput placeholder="Select study schedule" className="text-lg" />
+                      <SelectIcon className="mr-3" />
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem label="Mornings" value="mornings" />
-                      <SelectItem label="Afternoons" value="afternoons" />
-                      <SelectItem label="Evenings" value="evenings" />
-                      <SelectItem label="Flexible" value="flexible" />
-                    </SelectContent>
+                    <SelectPortal>
+                      <SelectBackdrop />
+                      <SelectContent>
+                        <SelectDragIndicatorWrapper>
+                          <SelectDragIndicator />
+                        </SelectDragIndicatorWrapper>
+                        {studySchedules.map((schedule) => (
+                          <SelectItem
+                            key={schedule.value}
+                            label={schedule.label}
+                            value={schedule.value}
+                          />
+                        ))}
+                      </SelectContent>
+                    </SelectPortal>
                   </Select>
                 )}
               />
               <FormControlError>
-                <FormControlErrorText>
+                <FormControlErrorText className="text-lg">
                   {errors.partner_preferences?.study_schedule?.message}
                 </FormControlErrorText>
               </FormControlError>
@@ -217,27 +347,37 @@ export default function EditProfileScreen() {
             {/* Communication Style */}
             <FormControl isInvalid={!!errors.partner_preferences?.communication_style}>
               <FormControlLabel>
-                <FormControlLabelText className="text-typography-0">Communication Style</FormControlLabelText>
+                <FormControlLabelText className="text-typography-0 text-lg">Communication Style</FormControlLabelText>
               </FormControlLabel>
               <Controller
                 control={control}
                 name="partner_preferences.communication_style"
                 render={({ field: { onChange, value } }) => (
                   <Select onValueChange={onChange} selectedValue={value}>
-                    <SelectTrigger>
-                      <SelectInput placeholder="Select communication style" />
+                    <SelectTrigger size="xl" className="px-4 rounded-xl">
+                      <SelectInput placeholder="Select communication style" className="text-lg" />
+                      <SelectIcon className="mr-3" />
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem label="Video Chat" value="video chat" />
-                      <SelectItem label="Voice Call" value="voice call" />
-                      <SelectItem label="Text Only" value="text only" />
-                      <SelectItem label="In Person" value="in person" />
-                    </SelectContent>
+                    <SelectPortal>
+                      <SelectBackdrop />
+                      <SelectContent>
+                        <SelectDragIndicatorWrapper>
+                          <SelectDragIndicator />
+                        </SelectDragIndicatorWrapper>
+                        {communicationStyles.map((style) => (
+                          <SelectItem
+                            key={style.value}
+                            label={style.label}
+                            value={style.value}
+                          />
+                        ))}
+                      </SelectContent>
+                    </SelectPortal>
                   </Select>
                 )}
               />
               <FormControlError>
-                <FormControlErrorText>
+                <FormControlErrorText className="text-lg">
                   {errors.partner_preferences?.communication_style?.message}
                 </FormControlErrorText>
               </FormControlError>
@@ -246,37 +386,40 @@ export default function EditProfileScreen() {
             {/* Bio */}
             <FormControl isInvalid={!!errors.bio}>
               <FormControlLabel>
-                <FormControlLabelText className="text-typography-0">Bio</FormControlLabelText>
+                <FormControlLabelText className="text-typography-0 text-lg">Bio</FormControlLabelText>
               </FormControlLabel>
               <Controller
                 control={control}
                 name="bio"
                 render={({ field: { onChange, onBlur, value } }) => (
-                  <Textarea>
+                  <Textarea size="xl" className="rounded-xl min-h-[120px]">
                     <TextareaInput
                       placeholder="Tell others about yourself and your study goals..."
                       value={value}
                       onChangeText={onChange}
                       onBlur={onBlur}
+                      className="text-lg"
+                      multiline
                     />
                   </Textarea>
                 )}
               />
               <FormControlError>
-                <FormControlErrorText>
+                <FormControlErrorText className="text-lg">
                   {errors.bio?.message}
                 </FormControlErrorText>
               </FormControlError>
             </FormControl>
 
             {/* Action Buttons */}
-            <VStack space="md" className="mt-6 mb-8">
+            <VStack space="md" className="mt-8 mb-8">
               <Button
                 onPress={handleSubmit(onSubmit)}
                 isDisabled={updateProfileMutation.isPending}
                 className="bg-primary-500"
+                size="lg"
               >
-                <ButtonText className="text-white font-semibold">
+                <ButtonText className="text-white font-semibold text-lg">
                   {updateProfileMutation.isPending ? 'Updating...' : 'Update Profile'}
                 </ButtonText>
               </Button>

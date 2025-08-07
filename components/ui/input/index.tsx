@@ -1,15 +1,15 @@
 'use client';
-import React from 'react';
+import { PrimitiveIcon, UIIcon } from '@gluestack-ui/icon';
 import { createInput } from '@gluestack-ui/input';
-import { View, Pressable, TextInput } from 'react-native';
+import type { VariantProps } from '@gluestack-ui/nativewind-utils';
 import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import {
-  withStyleContext,
   useStyleContext,
+  withStyleContext,
 } from '@gluestack-ui/nativewind-utils/withStyleContext';
 import { cssInterop } from 'nativewind';
-import type { VariantProps } from '@gluestack-ui/nativewind-utils';
-import { PrimitiveIcon, UIIcon } from '@gluestack-ui/icon';
+import React from 'react';
+import { Pressable, TextInput, View } from 'react-native';
 
 const SCOPE = 'INPUT';
 
@@ -38,10 +38,10 @@ const inputStyle = tva({
 
   variants: {
     size: {
-      xl: 'h-12',
-      lg: 'h-11',
-      md: 'h-10',
-      sm: 'h-9',
+      xl: 'h-16',
+      lg: 'h-14',
+      md: 'h-12',
+      sm: 'h-10',
     },
 
     variant: {

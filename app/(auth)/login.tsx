@@ -45,7 +45,17 @@ export default function LoginScreen() {
       const response = await loginMutation.mutateAsync(data);
       // Update auth state with user data and navigate
       setAuthState(true, response.data.user);
-      router.replace("/(protected)");
+      
+      // Check if user needs onboarding (profile incomplete)
+      const user = response.data.user;
+      console.log("user", user);
+      const needsOnboarding = !user.gender || !user.birthdate || !user.region || !user.course;
+      
+      if (needsOnboarding) {
+        router.replace("/(protected)/(tabs)/profile");
+      } else {
+        router.replace("/(protected)");
+      }
     } catch (error: any) {
       Alert.alert("Login Failed", error.message || "Something went wrong");
     }
@@ -82,9 +92,9 @@ export default function LoginScreen() {
             />
           </HStack>
 
-          <Text size="lg" className="text-center text-secondary-100 italic">
-            Login
-          </Text>
+                      <Text size="2xl" className="text-center text-secondary-100 italic">
+              Login
+            </Text>
         </VStack>
 
         {/* Form */}
@@ -92,7 +102,7 @@ export default function LoginScreen() {
           {/* Email Field */}
           <FormControl isInvalid={!!errors.email}>
             <FormControlLabel>
-              <FormControlLabelText className="text-typography-0">
+              <FormControlLabelText className="text-typography-0 text-xl">
                 Email
               </FormControlLabelText>
             </FormControlLabel>
@@ -100,7 +110,7 @@ export default function LoginScreen() {
               control={control}
               name="email"
               render={({ field: { onChange, onBlur, value } }) => (
-                <Input size="xl" className="px-2 rounded-lg">
+                <Input size="xl" className="px-4 rounded-xl">
                   <InputField
                     placeholder="Enter your email"
                     value={value}
@@ -109,12 +119,13 @@ export default function LoginScreen() {
                     keyboardType="email-address"
                     autoCapitalize="none"
                     autoComplete="email"
+                    className="text-xl"
                   />
                 </Input>
               )}
             />
             <FormControlError>
-              <FormControlErrorText>
+              <FormControlErrorText className="text-lg">
                 {errors.email?.message}
               </FormControlErrorText>
             </FormControlError>
@@ -123,7 +134,7 @@ export default function LoginScreen() {
           {/* Password Field */}
           <FormControl isInvalid={!!errors.password}>
             <FormControlLabel>
-              <FormControlLabelText className="text-typography-0">
+              <FormControlLabelText className="text-typography-0 text-xl">
                 Password
               </FormControlLabelText>
             </FormControlLabel>
@@ -131,7 +142,7 @@ export default function LoginScreen() {
               control={control}
               name="password"
               render={({ field: { onChange, onBlur, value } }) => (
-                <Input className="px-2 rounded-lg" size="xl">
+                <Input className="px-4 rounded-xl" size="xl">
                   <InputField
                     placeholder="Enter your password"
                     value={value}
@@ -139,12 +150,13 @@ export default function LoginScreen() {
                     onBlur={onBlur}
                     secureTextEntry
                     autoComplete="password"
+                    className="text-xl"
                   />
                 </Input>
               )}
             />
             <FormControlError>
-              <FormControlErrorText>
+              <FormControlErrorText className="text-lg">
                 {errors.password?.message}
               </FormControlErrorText>
             </FormControlError>
@@ -154,9 +166,10 @@ export default function LoginScreen() {
           <Button
             onPress={handleSubmit(onSubmit)}
             isDisabled={loginMutation.isPending}
-            className="mt-4 bg-primary-500"
+            className="mt-4 bg-primary-500 rounded-full"
+            size="lg"
           >
-            <ButtonText className="text-white font-semibold">
+            <ButtonText className="text-white font-semibold text-xl">
               {loginMutation.isPending ? "Signing In..." : "Sign In"}
             </ButtonText>
           </Button>
@@ -164,11 +177,11 @@ export default function LoginScreen() {
 
         {/* Footer */}
         <HStack space="sm" className="justify-center">
-          <Text size="sm" className="text-typography-200">
+          <Text size="lg" className="text-typography-200">
             Don't have an account?
           </Text>
           <Link href="/(auth)/register" asChild>
-            <Text size="sm" className="text-secondary-100 font-medium">
+            <Text size="lg" className="text-secondary-100 font-medium">
               Sign Up
             </Text>
           </Link>

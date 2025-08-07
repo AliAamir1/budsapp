@@ -24,14 +24,20 @@ const SWIPE_THRESHOLD = screenWidth * 0.3;
 interface UserCardProps {
   user: {
     id: string;
-    name: string;
-    bio?: string;
-    course?: string;
-    region?: string;
-    partner_preferences?: {
-      study_schedule?: string;
-      communication_style?: string;
-    };
+    user_id: string;
+    exam_id: string;
+    study_start_date: string;
+    study_end_date: string;
+    daily_study_time: string;
+    intensity: string;
+    created_at: string;
+    match_score: number;
+    exam_match: boolean;
+    intensity_match: boolean;
+    date_overlap: boolean;
+    overlap_days: number;
+    full_name: string;
+    gender: string | null;
   };
   index: number;
   onSwipe: (direction: 'left' | 'right', userId: string) => void;
@@ -44,7 +50,7 @@ const UserCard: React.FC<UserCardProps> = ({ user, index, onSwipe, isTop }) => {
   const scale = useSharedValue(isTop ? 1 : 0.95);
 
   const handleSwipe = (direction: 'left' | 'right') => {
-    onSwipe(direction, user.id);
+    onSwipe(direction, user.user_id);
   };
 
   const gestureHandler = useAnimatedGestureHandler({
@@ -137,43 +143,44 @@ const UserCard: React.FC<UserCardProps> = ({ user, index, onSwipe, isTop }) => {
             <VStack space="sm" className="w-full">
               <HStack className="justify-between items-center border-b border-typography-300 pb-2">
                 <Text className="text-typography-900 font-semibold text-base">Name:</Text>
-                <Text className="text-typography-600 text-base">{user.name}</Text>
+                <Text className="text-typography-600 text-base">{user.full_name}</Text>
               </HStack>
 
-              {user.course && (
+              <HStack className="justify-between items-center border-b border-typography-300 pb-2">
+                <Text className="text-typography-900 font-semibold text-base">Match Score:</Text>
+                <Text className="text-typography-600 text-base">{user.match_score}%</Text>
+              </HStack>
+
+              <HStack className="justify-between items-center border-b border-typography-300 pb-2">
+                <Text className="text-typography-900 font-semibold text-base">Study Period:</Text>
+                <Text className="text-typography-600 text-base">
+                  {new Date(user.study_start_date).toLocaleDateString()} - {new Date(user.study_end_date).toLocaleDateString()}
+                </Text>
+              </HStack>
+
+              <HStack className="justify-between items-center border-b border-typography-300 pb-2">
+                <Text className="text-typography-900 font-semibold text-base">Daily Study:</Text>
+                <Text className="text-typography-600 text-base">
+                  {user.daily_study_time.split(':')[0]}h {user.daily_study_time.split(':')[1]}m
+                </Text>
+              </HStack>
+
+              <HStack className="justify-between items-center border-b border-typography-300 pb-2">
+                <Text className="text-typography-900 font-semibold text-base">Intensity:</Text>
+                <Text className="text-typography-600 text-base capitalize">{user.intensity}</Text>
+              </HStack>
+
+              {user.gender && (
                 <HStack className="justify-between items-center border-b border-typography-300 pb-2">
-                  <Text className="text-typography-900 font-semibold text-base">Course:</Text>
-                  <Text className="text-typography-600 text-base">{user.course}</Text>
+                  <Text className="text-typography-900 font-semibold text-base">Gender:</Text>
+                  <Text className="text-typography-600 text-base capitalize">{user.gender}</Text>
                 </HStack>
               )}
 
-              {user.region && (
-                <HStack className="justify-between items-center border-b border-typography-300 pb-2">
-                  <Text className="text-typography-900 font-semibold text-base">Region:</Text>
-                  <Text className="text-typography-600 text-base">{user.region}</Text>
-                </HStack>
-              )}
-
-              {user.partner_preferences?.study_schedule && (
-                <HStack className="justify-between items-center border-b border-typography-300 pb-2">
-                  <Text className="text-typography-900 font-semibold text-base">Schedule:</Text>
-                  <Text className="text-typography-600 text-base">{user.partner_preferences.study_schedule}</Text>
-                </HStack>
-              )}
-
-              {user.partner_preferences?.communication_style && (
-                <HStack className="justify-between items-center border-b border-typography-300 pb-2">
-                  <Text className="text-typography-900 font-semibold text-base">Style:</Text>
-                  <Text className="text-typography-600 text-base">{user.partner_preferences.communication_style}</Text>
-                </HStack>
-              )}
-
-              {user.bio && (
-                <HStack className="justify-between items-center pt-2">
-                  <Text className="text-typography-900 font-semibold text-base">Bio:</Text>
-                  <Text className="text-typography-600 text-base">{user.bio}</Text>
-                </HStack>
-              )}
+              <HStack className="justify-between items-center pt-2">
+                <Text className="text-typography-900 font-semibold text-base">Overlap:</Text>
+                <Text className="text-typography-600 text-base">{user.overlap_days} days</Text>
+              </HStack>
             </VStack>
 
             {/* Decorative Chick */}
@@ -265,8 +272,9 @@ export default function HomeScreen() {
     );
   }
 
-  const users = potentialMatches?.data || [];
-  const visibleUsers = users.slice(currentIndex, currentIndex + 3);
+  const users = potentialMatches?.data?.matches || [];
+  console.log('potentialMatches', potentialMatches)
+  const visibleUsers = users?.slice(currentIndex, currentIndex + 3) || [];
 
   if (currentIndex >= users.length || users.length === 0) {
     return (
@@ -304,7 +312,7 @@ export default function HomeScreen() {
       <View style={{ flex: 1 }}>
         {visibleUsers.map((user, index) => (
           <UserCard
-            key={user.id}
+            key={user.user_id}
             user={user}
             index={index}
             onSwipe={handleSwipe}

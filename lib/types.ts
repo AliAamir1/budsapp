@@ -109,40 +109,83 @@ export interface ProfileResponse {
 
 export interface Match {
   id: string;
-  user1Id: string;
-  user2Id: string;
+  user1_id: string;
+  user2_id: string;
+  matched_at: string;
   status: 'pending' | 'matched' | 'rejected';
-  created_at: string;
-  updated_at: string;
+  partner_id: string;
+  partner_display_name: string;
+  partner_gender: string;
+  user1_profile: {
+    id: string;
+    full_name: string;
+    gender: string;
+  };
+  user2_profile: {
+    id: string;
+    full_name: string;
+    gender: string;
+  };
 }
 
 export interface MatchesResponse {
-  data: Match[];
-  pagination?: {
-    page: number;
-    limit: number;
-    total: number;
+  data: {
+    matches: Match[];
+    count: number;
   };
 }
 
 export interface PotentialMatch {
   id: string;
-  name: string;
-  bio?: string;
-  course?: string;
-  region?: string;
-  partner_preferences?: {
-    study_schedule?: string;
-    communication_style?: string;
-  };
+  user_id: string;
+  exam_id: string;
+  study_start_date: string;
+  study_end_date: string;
+  daily_study_time: string;
+  intensity: string;
+  created_at: string;
+  match_score: number;
+  exam_match: boolean;
+  intensity_match: boolean;
+  date_overlap: boolean;
+  overlap_days: number;
+  full_name: string;
+  gender: string | null;
 }
 
 export interface PotentialMatchesResponse {
-  data: PotentialMatch[];
-  pagination?: {
-    page: number;
-    limit: number;
-    total: number;
+  data: {
+    success: boolean;
+    matches: PotentialMatch[];
+    categorized: {
+      perfect: PotentialMatch[];
+      excellent: PotentialMatch[];
+      good: PotentialMatch[];
+      potential: PotentialMatch[];
+      counts: {
+        perfect: number;
+        excellent: number;
+        good: number;
+        potential: number;
+        total: number;
+      };
+    };
+    userPreferences: {
+      exam_id: string;
+      intensity: string;
+      study_period: {
+        start: string;
+        end: string;
+      };
+    };
+    pagination: {
+      currentPage: number;
+      totalPages: number;
+      totalCount: number;
+      hasNextPage: boolean;
+      hasPreviousPage: boolean;
+      limit: number;
+    };
   };
 }
 

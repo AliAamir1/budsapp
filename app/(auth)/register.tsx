@@ -172,7 +172,7 @@ export default function RegisterScreen() {
           <Button
             onPress={handleSubmit(onSubmit)}
             isDisabled={signUpMutation.isPending}
-            className="mt-4 bg-primary-500"
+            className="mt-4 bg-primary-500 rounded-full"
           >
             <ButtonText className="text-white font-semibold">
               {signUpMutation.isPending ? 'Creating Account...' : 'Create Account'}
