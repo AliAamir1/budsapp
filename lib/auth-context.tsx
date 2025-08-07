@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import { UnifiedAuth } from './unified-auth';
 
 interface User {
   id: string;
@@ -36,13 +37,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const refreshAuthState = async () => {
     try {
-      const token = await AsyncStorage.getItem('access_token');
+      // Check backend authentication (primary auth system)
+      const isBackendAuth = await UnifiedAuth.isBackendAuthenticated();
       const userDataString = await AsyncStorage.getItem('user_data');
       
-      if (token && userDataString) {
+      if (isBackendAuth && userDataString) {
         const userData = JSON.parse(userDataString);
         setUser(userData);
         setIsAuthenticated(true);
+        
+        // Initialize Supabase auth for chat functionality
+        await UnifiedAuth.initializeSupabaseAuth();
       } else {
         setUser(null);
         setIsAuthenticated(false);
@@ -62,6 +67,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(userData);
       // Store user data in AsyncStorage
       AsyncStorage.setItem('user_data', JSON.stringify(userData));
+      
+      // Initialize Supabase auth for chat functionality
+      UnifiedAuth.initializeSupabaseAuth();
     } else {
       setUser(null);
       // Clear user data from AsyncStorage

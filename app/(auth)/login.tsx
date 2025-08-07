@@ -21,6 +21,7 @@ import { VStack } from "@/components/ui/vstack";
 
 import { useAuth } from "@/lib/auth-context";
 import { useLogin } from "@/lib/queries";
+import { SupabaseAuth } from "@/lib/supabase-auth";
 import { LoginData, LoginSchema } from "@/lib/types";
 
 export default function LoginScreen() {
@@ -43,14 +44,16 @@ export default function LoginScreen() {
   const onSubmit = async (data: LoginData) => {
     try {
       const response = await loginMutation.mutateAsync(data);
+      await SupabaseAuth.signIn(data.email, data.password);
       // Update auth state with user data and navigate
       setAuthState(true, response.data.user);
-      
+
       // Check if user needs onboarding (profile incomplete)
       const user = response.data.user;
       console.log("user", user);
-      const needsOnboarding = !user.gender || !user.birthdate || !user.region || !user.course;
-      
+      const needsOnboarding =
+        !user.gender || !user.birthdate || !user.region || !user.course;
+
       if (needsOnboarding) {
         router.replace("/(protected)/(tabs)/profile");
       } else {
@@ -92,9 +95,9 @@ export default function LoginScreen() {
             />
           </HStack>
 
-                      <Text size="2xl" className="text-center text-secondary-100 italic">
-              Login
-            </Text>
+          <Text size="2xl" className="text-center text-secondary-100 italic">
+            Login
+          </Text>
         </VStack>
 
         {/* Form */}

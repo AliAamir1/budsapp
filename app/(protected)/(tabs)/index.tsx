@@ -14,6 +14,7 @@ import { Heading } from "@/components/ui/heading";
 import { HStack } from "@/components/ui/hstack";
 import { VStack } from "@/components/ui/vstack";
 import { useAuth } from "@/lib/auth-context";
+import { ChatService } from "@/lib/chat-service";
 import { useCreateMatch, usePotentialMatches } from "@/lib/queries";
 
 const { width: screenWidth } = Dimensions.get("window");
@@ -388,13 +389,19 @@ export default function HomeScreen() {
       createMatchMutation.mutate(
         { user1Id: currentUserId, user2Id: userId },
         {
-          onSuccess: () => {
-            // Silent success - animation already showed feedback
+          onSuccess: async () => {
             console.log("Match created successfully");
+            
+            // Create a chat for the new match
+            try {
+              await ChatService.getOrCreateChat(currentUserId, userId);
+              console.log("Chat created for new match");
+            } catch (error) {
+              console.error("Failed to create chat:", error);
+            }
           },
           onError: (error) => {
             console.error("Failed to create match:", error);
-            // Could show a subtle toast here instead of alert
           },
         }
       );
