@@ -21,7 +21,7 @@ import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
 import { useAuth } from "@/lib/auth-context";
 import { ChatService } from "@/lib/chat-service";
-import { Message, supabase } from "@/lib/supabase";
+import { Message } from "@/lib/supabase";
 
 interface ChatMessage {
   id: string;
@@ -32,9 +32,10 @@ interface ChatMessage {
 }
 
 export default function ChatScreen() {
-  const { id: chatId, userId } = useLocalSearchParams<{
+  const { id: matchId, partnerId, partnerName } = useLocalSearchParams<{
     id: string;
-    userId?: string;
+    partnerId?: string;
+    partnerName?: string;
   }>();
   const router = useRouter();
   const { getCurrentUserId } = useAuth();
@@ -46,10 +47,8 @@ export default function ChatScreen() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [chatInfo, setChatInfo] = useState<any>(null);
   const [newMessage, setNewMessage] = useState("");
-  const [isTemporaryChat, setIsTemporaryChat] = useState(false);
-  const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const [actualChatId, setActualChatId] = useState<string | null>(null);
 
   // Convert Supabase message to ChatMessage
   const convertMessage = (message: Message): ChatMessage => ({
@@ -60,32 +59,19 @@ export default function ChatScreen() {
     isOwn: message.sender_id === currentUserId,
   });
 
-  // Load initial messages and chat info
+  // Load initial messages and get actual chat ID
   const loadMessages = useCallback(async () => {
-    if (!chatId || !currentUserId) return;
-
-    // Check if this is a temporary chat
-    if (chatId.startsWith("temp_")) {
-      setIsTemporaryChat(true);
-      setIsLoading(false);
-      return;
-    }
+    if (!currentUserId || !partnerId) return;
 
     try {
       setIsLoading(true);
 
-      // Get chat info first
-      const { data: chatData, error: chatError } = await supabase
-        .from("chat")
-        .select("*")
-        .eq("id", chatId)
-        .single();
-
-      if (chatError) throw chatError;
-      setChatInfo(chatData);
+      // Get or create the actual chat
+      const chat = await ChatService.getOrCreateChat(currentUserId, partnerId);
+      setActualChatId(chat.id);
 
       // Get messages
-      const chatMessages = await ChatService.getChatMessages(chatId);
+      const chatMessages = await ChatService.getChatMessages(chat.id);
       const giftedMessages = chatMessages.map(convertMessage);
       setMessages(giftedMessages);
     } catch (err) {
@@ -93,35 +79,35 @@ export default function ChatScreen() {
     } finally {
       setIsLoading(false);
     }
-  }, [chatId, currentUserId]);
+  }, [currentUserId, partnerId]);
 
   // Subscribe to real-time messages
   useEffect(() => {
-    if (!chatId || !currentUserId) return;
+    if (!actualChatId || !currentUserId) return;
 
+    const subscription = ChatService.subscribeToChatMessages(
+      actualChatId,
+      (newMessage) => {
+        setMessages((prevMessages) => [
+          convertMessage(newMessage),
+          ...prevMessages,
+        ]);
+      }
+    );
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [actualChatId, currentUserId]);
+
+  // Load messages when chat ID is available
+  useEffect(() => {
     loadMessages();
-
-    // Only subscribe to real-time messages if it's not a temporary chat
-    if (!isTemporaryChat) {
-      const subscription = ChatService.subscribeToChatMessages(
-        chatId,
-        (newMessage) => {
-          setMessages((prevMessages) => [
-            convertMessage(newMessage),
-            ...prevMessages,
-          ]);
-        }
-      );
-
-      return () => {
-        subscription.unsubscribe();
-      };
-    }
-  }, [chatId, currentUserId, loadMessages, isTemporaryChat]);
+  }, [loadMessages]);
 
   // Send a message
   const sendMessage = async () => {
-    if (!chatId || !currentUserId || !newMessage.trim()) return;
+    if (!actualChatId || !currentUserId || !newMessage.trim() || !partnerId) return;
 
     const messageText = newMessage.trim();
     setNewMessage(""); // Clear input immediately
@@ -137,42 +123,11 @@ export default function ChatScreen() {
       };
       setMessages((prevMessages) => [optimisticMessage, ...prevMessages]);
 
-      let actualChatId = chatId;
-      let receiverId: string;
-
-      if (isTemporaryChat && userId) {
-        // Create the actual chat first
-        const newChat = await ChatService.getOrCreateChat(
-          currentUserId,
-          userId
-        );
-        actualChatId = newChat.id;
-        receiverId = userId;
-
-        // Update the URL to reflect the real chat ID
-        router.replace({
-          pathname: "/(protected)/chat/[id]",
-          params: { id: newChat.id },
-        });
-
-        // Update local state
-        setChatInfo(newChat);
-        setIsTemporaryChat(false);
-      } else if (chatInfo) {
-        // Existing chat
-        receiverId =
-          chatInfo.recipient_one === currentUserId
-            ? chatInfo.recipient_two
-            : chatInfo.recipient_one;
-      } else {
-        throw new Error("No receiver ID available");
-      }
-
       // Send the message to Supabase
       await ChatService.sendMessage(
         actualChatId,
         currentUserId,
-        receiverId,
+        partnerId,
         messageText
       );
     } catch (err) {
@@ -243,61 +198,55 @@ export default function ChatScreen() {
         <StatusBar barStyle="light-content" backgroundColor="#1f2937" />
 
         {/* Header with proper safe area handling */}
-        {(chatInfo || isTemporaryChat) && (
-          <Box
-            className="bg-background-950 border-b border-outline-200"
-            style={{
-              paddingTop: insets.top,
-              paddingBottom: 16,
-              paddingHorizontal: 16,
-            }}
-          >
-            <HStack space="md" className="items-center">
-              {/* Back button with proper icon */}
-              <Pressable
-                onPress={handleBackPress}
-                style={{
-                  width: 40,
-                  height: 40,
-                  borderRadius: 20,
-                  backgroundColor: "rgba(255, 255, 255, 0.1)",
-                  justifyContent: "center",
-                  alignItems: "center",
-                }}
-              >
-                <Text style={{ fontSize: 20, color: "#ffffff" }}>‹</Text>
-              </Pressable>
+        <Box
+          className="bg-background-950 border-b border-outline-200"
+          style={{
+            paddingTop: insets.top,
+            paddingBottom: 16,
+            paddingHorizontal: 16,
+          }}
+        >
+          <HStack space="md" className="items-center">
+            {/* Back button with proper icon */}
+            <Pressable
+              onPress={handleBackPress}
+              style={{
+                width: 40,
+                height: 40,
+                borderRadius: 20,
+                backgroundColor: "rgba(255, 255, 255, 0.1)",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <Text style={{ fontSize: 20, color: "#ffffff" }}>‹</Text>
+            </Pressable>
 
-              {/* User avatar */}
-              <View
-                style={{
-                  width: 40,
-                  height: 40,
-                  borderRadius: 20,
-                  backgroundColor: "#4AC3C7",
-                  justifyContent: "center",
-                  alignItems: "center",
-                }}
-              >
-                <Text style={{ fontSize: 16, color: "white" }}>👤</Text>
-              </View>
+            {/* User avatar */}
+            <View
+              style={{
+                width: 40,
+                height: 40,
+                borderRadius: 20,
+                backgroundColor: "#4AC3C7",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <Text style={{ fontSize: 16, color: "white" }}>👤</Text>
+            </View>
 
-              {/* User info */}
-              <VStack space="xs" className="flex-1">
-                <Text className="text-typography-0 text-lg font-semibold">
-                  {isTemporaryChat
-                    ? "New Chat"
-                    : chatInfo?.recipient_one_name ||
-                      chatInfo?.recipient_two_name ||
-                      "Study Partner"}
-                </Text>
-                <Text className="text-typography-400 text-sm">
-                  {isTemporaryChat ? "Start a conversation" : "Online"}
-                </Text>
-              </VStack>
-            </HStack>
-          </Box>
-        )}
+            {/* User info */}
+            <VStack space="xs" className="flex-1">
+              <Text className="text-typography-0 text-lg font-semibold">
+                {partnerName || "Study Partner"}
+              </Text>
+              {/* <Text className="text-typography-400 text-sm">
+                Online
+              </Text> */}
+            </VStack>
+          </HStack>
+        </Box>
 
         {/* Messages with proper keyboard handling */}
         <KeyboardAvoidingView
@@ -307,7 +256,7 @@ export default function ChatScreen() {
         >
           <FlatList
             ref={flatListRef}
-            data={messages}
+            data={messages.reverse()}
             renderItem={renderMessage}
             keyExtractor={(item) => item.id}
             inverted

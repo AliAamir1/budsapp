@@ -7,6 +7,7 @@ import { IconSymbol } from "@/components/ui/IconSymbol";
 import TabBarBackground from "@/components/ui/TabBarBackground";
 import { Colors } from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
+import Ionicons from '@expo/vector-icons/Ionicons';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -23,12 +24,12 @@ export default function TabLayout() {
             // Use a transparent background on iOS to show the blur effect
             position: "absolute",
             height: 88,
-            paddingBottom: 20,
+            paddingBottom: 10,
             paddingTop: 8,
           },
           default: {
             height: 88,
-            paddingBottom: 20,
+            paddingBottom: 10,
             paddingTop: 8,
           },
         }),
@@ -48,7 +49,7 @@ export default function TabLayout() {
         options={{
           title: "Chats",
           tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="message.fill" color={color} />
+            <Ionicons size={28} name="chatbox-ellipses" color={color} />
           ),
         }}
       />
@@ -57,7 +58,7 @@ export default function TabLayout() {
         options={{
           title: "Profile",
           tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="person.fill" color={color} />
+            <Ionicons size={28} name="person-circle" color={color} />
           ),
         }}
       />
