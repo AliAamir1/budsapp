@@ -1,7 +1,9 @@
 import { Ionicons } from "@expo/vector-icons";
+import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
+  ActivityIndicator,
   FlatList,
   Image,
   KeyboardAvoidingView,
@@ -52,9 +54,13 @@ export default function ChatsScreen() {
     }
   };
 
-  useEffect(() => {
-    loadMatches();
-  }, [currentUserId]);
+  useFocusEffect(
+    React.useCallback(() => {
+      if (currentUserId) {
+        loadMatches();
+      }
+    }, [currentUserId])
+  );
 
   // Set up real-time subscription for match updates
   useEffect(() => {
@@ -383,6 +389,7 @@ export default function ChatsScreen() {
             source={require("@/assets/images/chick.png")}
             style={{ width: 100, height: 100 }}
           />
+          <ActivityIndicator size="large" color={colors.primary[500]} />
           <Text className="text-typography-400 text-lg">
             Loading matches...
           </Text>

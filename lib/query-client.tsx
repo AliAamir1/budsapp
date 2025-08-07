@@ -14,7 +14,7 @@ const queryClient = new QueryClient({
         return failureCount < 3;
       },
       staleTime: 5 * 60 * 1000, // 5 minutes default stale time
-      refetchOnWindowFocus: false, // Disable refetch on window focus for mobile
+      refetchOnWindowFocus: true, // Enable refetch on window focus for mobile
     },
     mutations: {
       retry: false, // Don't retry mutations by default

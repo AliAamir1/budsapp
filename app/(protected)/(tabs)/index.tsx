@@ -7,8 +7,9 @@ import { useAuth } from "@/lib/auth-context";
 import { useCreateMatch, usePotentialMatches } from "@/lib/queries";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import Entypo from "@expo/vector-icons/Entypo";
+import { useFocusEffect } from '@react-navigation/native';
 import React, { useState } from "react";
-import { Dimensions, Image, Text, View } from "react-native";
+import { ActivityIndicator, Dimensions, Image, Text, View } from "react-native";
 import { PanGestureHandler } from "react-native-gesture-handler";
 import Animated, {
   runOnJS,
@@ -370,12 +371,23 @@ export default function HomeScreen() {
   // Fetch potential matches from API
   const {
     data: potentialMatches,
-    isLoading,
+    isFetching: isLoading,
     error,
+    refetch,
   } = usePotentialMatches(
     currentUserId || "",
     { page: 1, limit: 20 },
     !!currentUserId
+  );
+
+  // Refetch when tab becomes focused
+  useFocusEffect(
+    React.useCallback(() => {
+      if (currentUserId) {
+        console.log("refetching potential matches");
+        refetch();
+      }
+    }, [currentUserId, refetch])
   );
 
   const handleSwipe = (direction: "left" | "right", userId: string) => {
@@ -409,6 +421,7 @@ export default function HomeScreen() {
             source={require("@/assets/images/chick.png")}
             style={{ width: 100, height: 100 }}
           />
+          <ActivityIndicator size="large" color={colors.primary[500]} />
           <Heading size="2xl" className="text-primary-500 text-center">
             Finding Buds...
           </Heading>

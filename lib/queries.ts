@@ -1,23 +1,23 @@
 import {
-    useMutation,
-    UseMutationResult,
-    useQuery,
-    useQueryClient,
-    UseQueryResult,
+  useMutation,
+  UseMutationResult,
+  useQuery,
+  useQueryClient,
+  UseQueryResult,
 } from "@tanstack/react-query";
 import { apiClient } from "./api-client";
 import {
-    ApiError,
-    AuthResponse,
-    CreateMatchData,
-    ExamsResponse,
-    LoginData,
-    MatchesResponse,
-    PotentialMatchesResponse,
-    ProfileResponse,
-    SignUpData,
-    UpdateMatchData,
-    UpdateProfileData,
+  ApiError,
+  AuthResponse,
+  CreateMatchData,
+  ExamsResponse,
+  LoginData,
+  MatchesResponse,
+  PotentialMatchesResponse,
+  ProfileResponse,
+  SignUpData,
+  UpdateMatchData,
+  UpdateProfileData,
 } from "./types";
 
 // Query Keys
@@ -97,6 +97,7 @@ export const usePotentialMatches = (
     queryFn: () => apiClient.findPotentialMatches(userId, options),
     enabled: enabled && !!userId,
     staleTime: 0,
+    refetchOnWindowFocus: true, // Enable focus refetching for this specific query
   });
 };
 
