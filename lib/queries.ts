@@ -1,5 +1,11 @@
-import { useMutation, UseMutationResult, useQuery, useQueryClient, UseQueryResult } from '@tanstack/react-query';
-import { apiClient } from './api-client';
+import {
+    useMutation,
+    UseMutationResult,
+    useQuery,
+    useQueryClient,
+    UseQueryResult,
+} from "@tanstack/react-query";
+import { apiClient } from "./api-client";
 import {
     ApiError,
     AuthResponse,
@@ -12,28 +18,37 @@ import {
     SignUpData,
     UpdateMatchData,
     UpdateProfileData,
-} from './types';
+} from "./types";
 
 // Query Keys
 export const queryKeys = {
-  auth: ['auth'] as const,
-  matches: ['matches'] as const,
-  potentialMatches: (userId: string) => ['matches', 'potential', userId] as const,
-  matchedUsers: (userId: string) => ['matches', 'matched', userId] as const,
-  exams: ['exams'] as const,
-  profile: ['profile'] as const,
+  auth: ["auth"] as const,
+  matches: ["matches"] as const,
+  potentialMatches: (userId: string) =>
+    ["matches", "potential", userId] as const,
+  matchedUsers: (userId: string) => ["matches", "matched", userId] as const,
+  exams: ["exams"] as const,
+  profile: ["profile"] as const,
 } as const;
 
 // Auth Mutations
-export const useSignUp = (): UseMutationResult<AuthResponse, ApiError, SignUpData> => {
+export const useSignUp = (): UseMutationResult<
+  AuthResponse,
+  ApiError,
+  SignUpData
+> => {
   return useMutation({
     mutationFn: (data: SignUpData) => apiClient.signUp(data),
   });
 };
 
-export const useLogin = (): UseMutationResult<AuthResponse, ApiError, LoginData> => {
+export const useLogin = (): UseMutationResult<
+  AuthResponse,
+  ApiError,
+  LoginData
+> => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: (data: LoginData) => apiClient.login(data),
     onSuccess: () => {
@@ -43,9 +58,13 @@ export const useLogin = (): UseMutationResult<AuthResponse, ApiError, LoginData>
   });
 };
 
-export const useUpdateProfile = (): UseMutationResult<ProfileResponse, ApiError, UpdateProfileData> => {
+export const useUpdateProfile = (): UseMutationResult<
+  ProfileResponse,
+  ApiError,
+  UpdateProfileData
+> => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: (data: UpdateProfileData) => apiClient.updateProfile(data),
     onSuccess: () => {
@@ -57,7 +76,7 @@ export const useUpdateProfile = (): UseMutationResult<ProfileResponse, ApiError,
 
 export const useLogout = (): UseMutationResult<void, ApiError, void> => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: () => apiClient.logout(),
     onSuccess: () => {
@@ -77,7 +96,7 @@ export const usePotentialMatches = (
     queryKey: [...queryKeys.potentialMatches(userId), options],
     queryFn: () => apiClient.findPotentialMatches(userId, options),
     enabled: enabled && !!userId,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 0,
   });
 };
 
@@ -94,26 +113,34 @@ export const useMatchedUsers = (
 };
 
 // Match Mutations
-export const useCreateMatch = (): UseMutationResult<{ data: { id: string } }, ApiError, CreateMatchData> => {
+export const useCreateMatch = (): UseMutationResult<
+  { data: { id: string } },
+  ApiError,
+  CreateMatchData
+> => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: (data: CreateMatchData) => apiClient.createMatch(data),
     onSuccess: (_, variables) => {
       // Invalidate potential matches for both users
-      queryClient.invalidateQueries({ 
-        queryKey: queryKeys.potentialMatches(variables.user1Id) 
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.potentialMatches(variables.user1Id),
       });
-      queryClient.invalidateQueries({ 
-        queryKey: queryKeys.potentialMatches(variables.user2Id) 
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.potentialMatches(variables.user2Id),
       });
     },
   });
 };
 
-export const useUpdateMatchStatus = (): UseMutationResult<{ data: { success: boolean } }, ApiError, UpdateMatchData> => {
+export const useUpdateMatchStatus = (): UseMutationResult<
+  { data: { success: boolean } },
+  ApiError,
+  UpdateMatchData
+> => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: (data: UpdateMatchData) => apiClient.updateMatchStatus(data),
     onSuccess: () => {
@@ -124,7 +151,9 @@ export const useUpdateMatchStatus = (): UseMutationResult<{ data: { success: boo
 };
 
 // Exams Query
-export const useExams = (enabled: boolean = true): UseQueryResult<ExamsResponse, ApiError> => {
+export const useExams = (
+  enabled: boolean = true
+): UseQueryResult<ExamsResponse, ApiError> => {
   return useQuery({
     queryKey: queryKeys.exams,
     queryFn: () => apiClient.getExams(),

@@ -1,24 +1,22 @@
-import React, { useState } from 'react';
-import { Alert, Dimensions, Image, Text, View } from 'react-native';
-import { PanGestureHandler } from 'react-native-gesture-handler';
+import React, { useState } from "react";
+import { Dimensions, Image, Text, View } from "react-native";
+import { PanGestureHandler } from "react-native-gesture-handler";
 import Animated, {
-  Extrapolate,
-  interpolate,
   runOnJS,
   useAnimatedGestureHandler,
   useAnimatedStyle,
   useSharedValue,
   withSpring,
-} from 'react-native-reanimated';
+} from "react-native-reanimated";
 
-import { Box } from '@/components/ui/box';
-import { Heading } from '@/components/ui/heading';
-import { HStack } from '@/components/ui/hstack';
-import { VStack } from '@/components/ui/vstack';
-import { useAuth } from '@/lib/auth-context';
-import { useCreateMatch, usePotentialMatches } from '@/lib/queries';
+import { Box } from "@/components/ui/box";
+import { Heading } from "@/components/ui/heading";
+import { HStack } from "@/components/ui/hstack";
+import { VStack } from "@/components/ui/vstack";
+import { useAuth } from "@/lib/auth-context";
+import { useCreateMatch, usePotentialMatches } from "@/lib/queries";
 
-const { width: screenWidth } = Dimensions.get('window');
+const { width: screenWidth } = Dimensions.get("window");
 const SWIPE_THRESHOLD = screenWidth * 0.3;
 
 interface UserCardProps {
@@ -40,7 +38,7 @@ interface UserCardProps {
     gender: string | null;
   };
   index: number;
-  onSwipe: (direction: 'left' | 'right', userId: string) => void;
+  onSwipe: (direction: "left" | "right", userId: string) => void;
   isTop: boolean;
 }
 
@@ -48,8 +46,16 @@ const UserCard: React.FC<UserCardProps> = ({ user, index, onSwipe, isTop }) => {
   const translateX = useSharedValue(0);
   const translateY = useSharedValue(0);
   const scale = useSharedValue(isTop ? 1 : 0.95);
+  const opacity = useSharedValue(1);
+  const rotation = useSharedValue(0);
+  const circleScale = useSharedValue(0);
+  const circleOpacity = useSharedValue(0);
+  const cardColor = useSharedValue("#ffffff"); // Default white color
+  const leftCircleOpacity = useSharedValue(0);
+  const rightCircleOpacity = useSharedValue(0);
 
-  const handleSwipe = (direction: 'left' | 'right') => {
+  const handleSwipe = (direction: "left" | "right") => {
+    // Right swipe = match, Left swipe = pass
     onSwipe(direction, user.user_id);
   };
 
@@ -61,138 +67,297 @@ const UserCard: React.FC<UserCardProps> = ({ user, index, onSwipe, isTop }) => {
       if (!isTop) return;
       translateX.value = context.startX + event.translationX;
       translateY.value = event.translationY * 0.1;
+
+      // Show visual feedback during swipe
+      const progress = Math.abs(translateX.value) / SWIPE_THRESHOLD;
+      const isRightSwipe = translateX.value > 0;
+      const isLeftSwipe = translateX.value < 0;
+
+      if (progress > 0.3) {
+        circleScale.value = withSpring(Math.min(progress, 1), { damping: 15 });
+
+        // Show only relevant icon based on direction
+        if (isRightSwipe) {
+          leftCircleOpacity.value = withSpring(1, { damping: 15 }); // Love icon on left
+          rightCircleOpacity.value = withSpring(0, { damping: 15 });
+          // Progressive green color for right swipe (match)
+          const greenIntensity = Math.min(progress, 1);
+          // Blend from white to green
+          const r = Math.round(255 + (16 - 255) * greenIntensity);
+          const g = Math.round(255 + (185 - 255) * greenIntensity);
+          const b = Math.round(255 + (129 - 255) * greenIntensity);
+          cardColor.value = `rgb(${r}, ${g}, ${b})`;
+        } else if (isLeftSwipe) {
+          rightCircleOpacity.value = withSpring(1, { damping: 15 }); // Cross icon on right
+          leftCircleOpacity.value = withSpring(0, { damping: 15 });
+          // Progressive red color for left swipe (pass)
+          const redIntensity = Math.min(progress, 1);
+          // Blend from white to red
+          const r = Math.round(255 + (239 - 255) * redIntensity);
+          const g = Math.round(255 + (68 - 255) * redIntensity);
+          const b = Math.round(255 + (68 - 255) * redIntensity);
+          cardColor.value = `rgb(${r}, ${g}, ${b})`;
+        }
+
+        // Rotate based on direction
+        if (isRightSwipe) {
+          rotation.value = withSpring(15, { damping: 15 });
+        } else if (isLeftSwipe) {
+          rotation.value = withSpring(-15, { damping: 15 });
+        }
+      } else {
+        circleScale.value = withSpring(0, { damping: 15 });
+        leftCircleOpacity.value = withSpring(0, { damping: 15 });
+        rightCircleOpacity.value = withSpring(0, { damping: 15 });
+        rotation.value = withSpring(0, { damping: 15 });
+        cardColor.value = "#ffffff"; // Reset to default white color
+      }
     },
     onEnd: (event) => {
       if (!isTop) return;
-      
+
       const velocity = event.velocityX;
       const translation = translateX.value;
-      
+
       if (Math.abs(velocity) > 500 || Math.abs(translation) > SWIPE_THRESHOLD) {
         // Swipe detected
-        const direction = translation > 0 ? 'right' : 'left';
-        const endX = direction === 'right' ? screenWidth * 1.5 : -screenWidth * 1.5;
-        
+        const direction = translation > 0 ? "right" : "left";
+        const endX =
+          direction === "right" ? screenWidth * 1.5 : -screenWidth * 1.5;
+
+        // Complete the circle animation
+        circleScale.value = withSpring(1.2, { damping: 15 });
+        circleOpacity.value = withSpring(1, { damping: 15 });
+
+        // Animate card off screen
         translateX.value = withSpring(endX, { damping: 15 });
         translateY.value = withSpring(0);
-        
+        opacity.value = withSpring(0, { damping: 15 });
+
         // Call swipe handler after animation
         runOnJS(handleSwipe)(direction);
       } else {
         // Return to center
         translateX.value = withSpring(0);
         translateY.value = withSpring(0);
+        circleScale.value = withSpring(0);
+        leftCircleOpacity.value = withSpring(0);
+        rightCircleOpacity.value = withSpring(0);
+        rotation.value = withSpring(0);
+        cardColor.value = withSpring("#ffffff");
       }
     },
   });
 
   const animatedStyle = useAnimatedStyle(() => {
-    const rotate = interpolate(
-      translateX.value,
-      [-screenWidth / 2, 0, screenWidth / 2],
-      [-15, 0, 15],
-      Extrapolate.CLAMP
-    );
-
     return {
       transform: [
         { translateX: translateX.value },
         { translateY: translateY.value },
-        { rotate: `${rotate}deg` },
+        { rotate: `${rotation.value}deg` },
         { scale: scale.value },
       ],
+      opacity: opacity.value,
       zIndex: isTop ? 10 : index,
+    };
+  });
+
+  const cardAnimatedStyle = useAnimatedStyle(() => {
+    return {
+      backgroundColor: cardColor.value,
+      borderRadius: 24,
+      overflow: "hidden",
+    };
+  });
+
+  const leftCircleAnimatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ scale: circleScale.value }],
+      opacity: leftCircleOpacity.value,
+    };
+  });
+
+  const rightCircleAnimatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ scale: circleScale.value }],
+      opacity: rightCircleOpacity.value,
     };
   });
 
   return (
     <PanGestureHandler onGestureEvent={gestureHandler}>
-      <Animated.View
-        style={[
-          {
-            position: 'absolute',
-            width: screenWidth * 0.85,
-            height: 420,
-            alignSelf: 'center',
-            top: 120,
-          },
-          animatedStyle,
-        ]}
-      >
-        <Box className="bg-background-950 rounded-3xl p-6 border-4 border-primary-400 shadow-lg">
-          {/* Chick Avatar */}
-          <VStack space="md" className="items-center">
-            <View
-              style={{
-                width: 80,
-                height: 80,
-                borderRadius: 40,
-                backgroundColor: '#4AC3C7',
-                justifyContent: 'center',
-                alignItems: 'center',
-                marginBottom: 16,
-              }}
+              <Animated.View
+          style={[
+            {
+              position: "absolute",
+              width: screenWidth * 0.85,
+              height: 420,
+              alignSelf: "center",
+              top: 100,
+            },
+            animatedStyle,
+          ]}
+        >
+        <Animated.View style={[cardAnimatedStyle]}>
+          <Box className="rounded-3xl p-6 border-4   shadow-lg">
+            {/* Swipe Feedback Circles */}
+            <Animated.View
+              style={[
+                {
+                  position: "absolute",
+                  top: 20,
+                  left: 20,
+                  width: 80,
+                  height: 80,
+                  borderRadius: 40,
+                  backgroundColor: "#10b981",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  zIndex: 20,
+                },
+                leftCircleAnimatedStyle,
+              ]}
             >
-              <Image
-                source={require('@/assets/images/chick.png')}
-                style={{ width: 60, height: 60 }}
-              />
-            </View>
+              <Text
+                style={{ color: "white", fontSize: 32, fontWeight: "bold" }}
+              >
+                ♥
+              </Text>
+            </Animated.View>
 
-            {/* User Info */}
-            <VStack space="sm" className="w-full">
-              <HStack className="justify-between items-center border-b border-typography-300 pb-2">
-                <Text className="text-typography-900 font-semibold text-base">Name:</Text>
-                <Text className="text-typography-600 text-base">{user.full_name}</Text>
-              </HStack>
+            <Animated.View
+              style={[
+                {
+                  position: "absolute",
+                  top: 20,
+                  right: 20,
+                  width: 80,
+                  height: 80,
+                  borderRadius: 40,
+                  backgroundColor: "#ef4444",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  zIndex: 20,
+                },
+                rightCircleAnimatedStyle,
+              ]}
+            >
+              <Text
+                style={{ color: "white", fontSize: 32, fontWeight: "bold" }}
+              >
+                ✕
+              </Text>
+            </Animated.View>
 
-              <HStack className="justify-between items-center border-b border-typography-300 pb-2">
-                <Text className="text-typography-900 font-semibold text-base">Match Score:</Text>
-                <Text className="text-typography-600 text-base">{user.match_score}%</Text>
-              </HStack>
+            {/* Chick Avatar */}
+            <VStack space="md" className="items-center">
+              <View
+                style={{
+                  width: 80,
+                  height: 80,
+                  borderRadius: 40,
+                  backgroundColor: "#4AC3C7",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  marginBottom: 16,
+                }}
+              >
+                <Image
+                  source={require("@/assets/images/chick.png")}
+                  style={{ width: 60, height: 60 }}
+                />
+              </View>
 
-              <HStack className="justify-between items-center border-b border-typography-300 pb-2">
-                <Text className="text-typography-900 font-semibold text-base">Study Period:</Text>
-                <Text className="text-typography-600 text-base">
-                  {new Date(user.study_start_date).toLocaleDateString()} - {new Date(user.study_end_date).toLocaleDateString()}
-                </Text>
-              </HStack>
-
-              <HStack className="justify-between items-center border-b border-typography-300 pb-2">
-                <Text className="text-typography-900 font-semibold text-base">Daily Study:</Text>
-                <Text className="text-typography-600 text-base">
-                  {user.daily_study_time.split(':')[0]}h {user.daily_study_time.split(':')[1]}m
-                </Text>
-              </HStack>
-
-              <HStack className="justify-between items-center border-b border-typography-300 pb-2">
-                <Text className="text-typography-900 font-semibold text-base">Intensity:</Text>
-                <Text className="text-typography-600 text-base capitalize">{user.intensity}</Text>
-              </HStack>
-
-              {user.gender && (
+              {/* User Info */}
+              <VStack space="sm" className="w-full">
                 <HStack className="justify-between items-center border-b border-typography-300 pb-2">
-                  <Text className="text-typography-900 font-semibold text-base">Gender:</Text>
-                  <Text className="text-typography-600 text-base capitalize">{user.gender}</Text>
+                  <Text className="text-typography-900 font-semibold text-base">
+                    Name:
+                  </Text>
+                  <Text className="text-typography-600 text-base">
+                    {user.full_name}
+                  </Text>
                 </HStack>
-              )}
 
-              <HStack className="justify-between items-center pt-2">
-                <Text className="text-typography-900 font-semibold text-base">Overlap:</Text>
-                <Text className="text-typography-600 text-base">{user.overlap_days} days</Text>
-              </HStack>
+                <HStack className="justify-between items-center border-b border-typography-300 pb-2">
+                  <Text className="text-typography-900 font-semibold text-base">
+                    Match Score:
+                  </Text>
+                  <Text className="text-typography-600 text-base">
+                    {user.match_score}%
+                  </Text>
+                </HStack>
+
+                <HStack className="justify-between items-center border-b border-typography-300 pb-2">
+                  <Text className="text-typography-900 font-semibold text-base">
+                    Study Period:
+                  </Text>
+                  <Text className="text-typography-600 text-base">
+                    {new Date(user.study_start_date).toLocaleDateString()} -{" "}
+                    {new Date(user.study_end_date).toLocaleDateString()}
+                  </Text>
+                </HStack>
+
+                <HStack className="justify-between items-center border-b border-typography-300 pb-2">
+                  <Text className="text-typography-900 font-semibold text-base">
+                    Daily Study:
+                  </Text>
+                  <Text className="text-typography-600 text-base">
+                    {user.daily_study_time.split(":")[0]}h{" "}
+                    {user.daily_study_time.split(":")[1]}m
+                  </Text>
+                </HStack>
+
+                <HStack className="justify-between items-center border-b border-typography-300 pb-2">
+                  <Text className="text-typography-900 font-semibold text-base">
+                    Intensity:
+                  </Text>
+                  <Text className="text-typography-600 text-base capitalize">
+                    {user.intensity}
+                  </Text>
+                </HStack>
+
+                {user.gender && (
+                  <HStack className="justify-between items-center border-b border-typography-300 pb-2">
+                    <Text className="text-typography-900 font-semibold text-base">
+                      Gender:
+                    </Text>
+                    <Text className="text-typography-600 text-base capitalize">
+                      {user.gender}
+                    </Text>
+                  </HStack>
+                )}
+
+                <HStack className="justify-between items-center pt-2">
+                  <Text className="text-typography-900 font-semibold text-base">
+                    Overlap:
+                  </Text>
+                  <Text className="text-typography-600 text-base">
+                    {user.overlap_days} days
+                  </Text>
+                </HStack>
+              </VStack>
+
+              {/* Decorative Chick */}
+              <View style={{ position: "absolute", bottom: -10, right: 10 }}>
+                <Image
+                  source={require("@/assets/images/chick-thumbs-up.png")}
+                  style={{ width: 50, height: 50 }}
+                />
+                <Text
+                  style={{
+                    fontSize: 20,
+                    position: "absolute",
+                    top: -5,
+                    right: -5,
+                  }}
+                >
+                  ✨
+                </Text>
+              </View>
             </VStack>
-
-            {/* Decorative Chick */}
-            <View style={{ position: 'absolute', bottom: -10, right: 10 }}>
-              <Image
-                source={require('@/assets/images/chick-thumbs-up.png')}
-                style={{ width: 50, height: 50 }}
-              />
-              <Text style={{ fontSize: 20, position: 'absolute', top: -5, right: -5 }}>✨</Text>
-            </View>
-          </VStack>
-        </Box>
+          </Box>
+        </Animated.View>
       </Animated.View>
     </PanGestureHandler>
   );
@@ -202,25 +367,34 @@ export default function HomeScreen() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const createMatchMutation = useCreateMatch();
   const { getCurrentUserId } = useAuth();
-  
+
   // Get current user ID from auth context
   const currentUserId = getCurrentUserId();
-  
+
   // Fetch potential matches from API
-  const { data: potentialMatches, isLoading, error } = usePotentialMatches(currentUserId || '', { page: 1, limit: 20 }, !!currentUserId);
-  
-  const handleSwipe = (direction: 'left' | 'right', userId: string) => {
-    if (direction === 'right' && currentUserId) {
+  const {
+    data: potentialMatches,
+    isLoading,
+    error,
+  } = usePotentialMatches(
+    currentUserId || "",
+    { page: 1, limit: 20 },
+    !!currentUserId
+  );
+
+  const handleSwipe = (direction: "left" | "right", userId: string) => {
+    if (direction === "right" && currentUserId) {
       // Match - create match via API
       createMatchMutation.mutate(
         { user1Id: currentUserId, user2Id: userId },
         {
           onSuccess: () => {
-            Alert.alert('Match!', 'You have a new study buddy! 🎉');
+            // Silent success - animation already showed feedback
+            console.log("Match created successfully");
           },
           onError: (error) => {
-            console.error('Failed to create match:', error);
-            Alert.alert('Error', 'Failed to create match. Please try again.');
+            console.error("Failed to create match:", error);
+            // Could show a subtle toast here instead of alert
           },
         }
       );
@@ -238,7 +412,7 @@ export default function HomeScreen() {
       <Box className="flex-1 bg-background-0 justify-center items-center px-6">
         <VStack space="lg" className="items-center">
           <Image
-            source={require('@/assets/images/chick.png')}
+            source={require("@/assets/images/chick.png")}
             style={{ width: 100, height: 100 }}
           />
           <Heading size="2xl" className="text-primary-500 text-center">
@@ -258,7 +432,7 @@ export default function HomeScreen() {
       <Box className="flex-1 bg-background-0 justify-center items-center px-6">
         <VStack space="lg" className="items-center">
           <Image
-            source={require('@/assets/images/chick.png')}
+            source={require("@/assets/images/chick.png")}
             style={{ width: 100, height: 100 }}
           />
           <Heading size="2xl" className="text-primary-500 text-center">
@@ -273,7 +447,7 @@ export default function HomeScreen() {
   }
 
   const users = potentialMatches?.data?.matches || [];
-  console.log('potentialMatches', potentialMatches)
+  console.log("potentialMatches", potentialMatches);
   const visibleUsers = users?.slice(currentIndex, currentIndex + 3) || [];
 
   if (currentIndex >= users.length || users.length === 0) {
@@ -281,14 +455,15 @@ export default function HomeScreen() {
       <Box className="flex-1 bg-background-0 justify-center items-center px-6">
         <VStack space="lg" className="items-center">
           <Image
-            source={require('@/assets/images/chick-thumbs-up.png')}
+            source={require("@/assets/images/chick-thumbs-up.png")}
             style={{ width: 100, height: 100 }}
           />
           <Heading size="2xl" className="text-primary-500 text-center">
             No More Buds!
           </Heading>
           <Text className="text-typography-0 text-center text-lg">
-            You've seen all available study partners for now. Check back later for more!
+            You've seen all available study partners for now. Check back later
+            for more!
           </Text>
         </VStack>
       </Box>
@@ -300,7 +475,7 @@ export default function HomeScreen() {
       {/* Header */}
       <VStack className="pt-16 pb-4 items-center">
         <Image
-          source={require('@/assets/images/chick.png')}
+          source={require("@/assets/images/chick.png")}
           style={{ width: 60, height: 60 }}
         />
         <Heading size="2xl" className="text-primary-500 mt-2">

@@ -89,7 +89,7 @@ class ApiClient {
         "refresh_token",
         response.data.data.session.refresh_token
       );
-      
+
       // Store user data if available
       if (response.data.data.user) {
         await AsyncStorage.setItem(
@@ -135,10 +135,13 @@ class ApiClient {
   }
 
   async createMatch(data: CreateMatchData): Promise<{ data: { id: string } }> {
+    console.log("createMatch payload", data);
     const response = await this.client.post<{ data: { id: string } }>(
       "/matches",
       data
     );
+
+    console.log("createMatch", response.data);
     return response.data;
   }
 
