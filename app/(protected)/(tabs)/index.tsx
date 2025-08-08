@@ -7,7 +7,7 @@ import { useAuth } from "@/lib/auth-context";
 import { useCreateMatch, usePotentialMatches } from "@/lib/queries";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import Entypo from "@expo/vector-icons/Entypo";
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect } from "@react-navigation/native";
 import React, { useState } from "react";
 import { ActivityIndicator, Dimensions, Image, Text, View } from "react-native";
 import { PanGestureHandler } from "react-native-gesture-handler";
@@ -77,9 +77,15 @@ const UserCard: React.FC<UserCardProps> = ({ user, index, onSwipe, isTop }) => {
     } else {
       // Animate to background position with subtle rotation
       scale.value = withSpring(0.85, { damping: 20, stiffness: 200 });
-      translateY.value = withSpring(index * 15, { damping: 20, stiffness: 200 });
+      translateY.value = withSpring(index * 15, {
+        damping: 20,
+        stiffness: 200,
+      });
       translateX.value = withSpring(0, { damping: 20, stiffness: 200 });
-      rotation.value = withSpring(index % 2 === 0 ? 2 : -2, { damping: 20, stiffness: 200 });
+      rotation.value = withSpring(index % 2 === 0 ? 2 : -2, {
+        damping: 20,
+        stiffness: 200,
+      });
     }
   }, [isTop, index]);
 
@@ -229,21 +235,24 @@ const UserCard: React.FC<UserCardProps> = ({ user, index, onSwipe, isTop }) => {
           {
             position: "absolute",
             width: screenWidth * 0.875,
-            height: 420,
+            height: 360,
             alignSelf: "center",
-            top: 10 + (index * 8), // Reduced spacing for tighter stack
+            top: 10 + index * 8, // Reduced spacing for tighter stack
           },
           animatedStyle,
         ]}
       >
         <Animated.View style={[cardAnimatedStyle]}>
-          <Box className="rounded-3xl p-6 border-4 shadow-lg" style={{
-            shadowColor: colors.primary[500],
-            shadowOffset: { width: 0, height: index * 3 },
-            shadowOpacity: isTop ? 0.4 : 0.15,
-            shadowRadius: isTop ? 15 : 8,
-            elevation: isTop ? 12 : 6,
-          }}>
+          <Box
+            className="rounded-3xl p-6 border-4 shadow-lg"
+            style={{
+              shadowColor: colors.primary[500],
+              shadowOffset: { width: 0, height: index * 3 },
+              shadowOpacity: isTop ? 0.4 : 0.15,
+              shadowRadius: isTop ? 15 : 8,
+              elevation: isTop ? 12 : 6,
+            }}
+          >
             {/* Swipe Feedback Circles */}
             <Animated.View
               style={[
@@ -316,15 +325,6 @@ const UserCard: React.FC<UserCardProps> = ({ user, index, onSwipe, isTop }) => {
                 </HStack>
 
                 <HStack className="justify-between items-center border-b border-typography-300 pb-2">
-                  <Text className="text-primary-500 font-semibold text-lg">
-                    Exam:
-                  </Text>
-                  <Text className="text-typography-0 text-lg font-semibold">
-                    {user.exam_name}
-                  </Text>
-                </HStack>
-
-                <HStack className="justify-between items-center border-b border-typography-300 pb-2">
                   <Text className="text-primary-500 text-lg font-semibold">
                     Study Period:
                   </Text>
@@ -364,6 +364,14 @@ const UserCard: React.FC<UserCardProps> = ({ user, index, onSwipe, isTop }) => {
                   </HStack>
                 )}
 
+                <HStack className="justify-between items-center pt-2">
+                  <Text className="text-primary-500 font-semibold text-lg">
+                    Exam:
+                  </Text>
+                  <Text className="text-typography-0 text-lg font-semibold">
+                    {user.exam_name}
+                  </Text>
+                </HStack>
                 <HStack className="justify-between items-center pt-2">
                   <Text className="text-primary-500 font-semibold text-lg">
                     Exam Field:
@@ -544,6 +552,18 @@ export default function HomeScreen() {
         <Heading size="2xl" className="text-primary-500 mt-2">
           Add Buds!
         </Heading>
+        <Box className="absolute bottom-0 left-0 right-0 px-6">
+          <HStack className="justify-between items-center">
+            <VStack className="items-center">
+              <Text className="text-5xl">👈</Text>
+              <Text className="text-typography-200 text-sm">Pass</Text>
+            </VStack>
+            <VStack className="items-center">
+              <Text className="text-5xl">👉</Text>
+              <Text className="text-typography-200 text-sm">Match</Text>
+            </VStack>
+          </HStack>
+        </Box>
       </VStack>
 
       {/* Cards Stack */}
@@ -560,18 +580,6 @@ export default function HomeScreen() {
       </View>
 
       {/* Instructions */}
-      <Box className="absolute bottom-10 left-0 right-0 px-6">
-        <HStack className="justify-between items-center">
-          <VStack className="items-center">
-            <Text className="text-5xl">👈</Text>
-            <Text className="text-typography-200 text-sm">Pass</Text>
-          </VStack>
-          <VStack className="items-center">
-            <Text className="text-5xl">👉</Text>
-            <Text className="text-typography-200 text-sm">Match</Text>
-          </VStack>
-        </HStack>
-      </Box>
     </Box>
   );
 }

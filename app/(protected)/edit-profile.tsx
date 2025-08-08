@@ -26,6 +26,7 @@ import { communicationStyles } from "@/consts/communication";
 import { countries } from "@/consts/countries";
 import { courses } from "@/consts/courses";
 import { studySchedules } from "@/consts/studySchedule";
+import { useTheme } from "@/hooks/useTheme";
 import { useAuth } from "@/lib/auth-context";
 import { useExams, useUpdateProfile } from "@/lib/queries";
 import { UpdateProfileData, UpdateProfileSchema } from "@/lib/types";
@@ -37,7 +38,7 @@ export default function EditProfileScreen() {
   const { user, setAuthState } = useAuth();
   const updateProfileMutation = useUpdateProfile();
   const { data: examsData } = useExams();
-
+  const { colors } = useTheme();
   const {
     control,
     handleSubmit,
@@ -98,7 +99,7 @@ export default function EditProfileScreen() {
             onPress={() => router.back()}
             className="absolute top-0 left-0"
           >
-            <Ionicons name="arrow-back" size={24} color="black" />
+            <Ionicons name="arrow-back" size={24} color={colors.primary[500]} />
           </Pressable>
           <Image
             source={require("@/assets/images/logo.png")}
