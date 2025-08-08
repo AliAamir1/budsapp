@@ -41,7 +41,8 @@ class ApiClient {
     this.client.interceptors.request.use(
       async (config) => {
         const token = await AsyncStorage.getItem("access_token");
-        if (token) {
+       
+        if (token && !config.headers.Authorization) {
           config.headers.Authorization = `Bearer ${token}`;
         }
         return config;

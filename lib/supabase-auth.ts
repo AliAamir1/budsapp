@@ -13,12 +13,10 @@ export class SupabaseAuth {
   // Sign in with email and password
   static async signIn(email: string, password: string) {
     console.log("supabase signIn", email, password);
-    debugger;
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
-    debugger;
     console.log("supabase signIn", data, error);
     if (error) {
       throw new Error(error.message);
