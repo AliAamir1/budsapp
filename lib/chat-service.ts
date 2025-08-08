@@ -138,6 +138,7 @@ export class ChatService {
     userId: string,
     callback: (chat: Chat) => void
   ) {
+    console.log("subscribeToChatUpdates", userId);
     return supabase
       .channel(`user_chats:${userId}`)
       .on(
@@ -149,6 +150,7 @@ export class ChatService {
           filter: `recipient_one=eq.${userId}`,
         },
         (payload) => {
+          debugger;
           callback(payload.new as Chat);
         }
       )
