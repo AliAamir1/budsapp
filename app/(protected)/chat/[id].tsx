@@ -231,7 +231,11 @@ export default function ChatScreen() {
                 alignItems: "center",
               }}
             >
-              <Ionicons name="arrow-back" size={24} color={colors.typography[0]} />
+              <Ionicons
+                name="arrow-back"
+                size={24}
+                color={colors.typography[0]}
+              />
             </Pressable>
 
             {/* User avatar */}
@@ -264,23 +268,20 @@ export default function ChatScreen() {
         </Box>
 
         {/* Messages with proper keyboard handling */}
-        <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
-          style={{ flex: 1 }}
-          keyboardVerticalOffset={Platform.OS === "ios" ? 12 : 0}
-        >
+        <Box style={{ flex: 1 }}>
           <FlatList
             ref={flatListRef}
             data={messages}
             renderItem={renderMessage}
             keyExtractor={(item) => item.id}
             inverted
-            className="flex-1 bg-background-0"
+            style={{ flex: 1, backgroundColor: colors.background[0] }}
             contentContainerStyle={{
               paddingVertical: 10,
               flexGrow: 1,
             }}
-            showsVerticalScrollIndicator={false}
+            showsVerticalScrollIndicator={true}
+            scrollEnabled={true}
             onContentSizeChange={() => {
               if (messages.length > 0) {
                 flatListRef.current?.scrollToOffset({
@@ -290,8 +291,13 @@ export default function ChatScreen() {
               }
             }}
           />
+        </Box>
 
-          {/* Input with proper keyboard handling */}
+        {/* Input with proper keyboard handling */}
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          keyboardVerticalOffset={Platform.OS === "ios" ? 12 : 0}
+        >
           <Box
             className="bg-background-100 border-t border-outline-200"
             style={{
