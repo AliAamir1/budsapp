@@ -34,6 +34,7 @@ export default function RegisterScreen() {
       email: "",
       password: "",
       full_name: "",
+      confirm_password: "",
     },
   });
 
@@ -185,6 +186,38 @@ export default function RegisterScreen() {
             <FormControlError>
               <FormControlErrorText>
                 {errors.password?.message}
+              </FormControlErrorText>
+            </FormControlError>
+          </FormControl>
+
+          {/* Confirm Password Field */}
+
+          {/* Confirm Password Field */}
+          <FormControl isInvalid={!!errors.confirm_password}>
+            <FormControlLabel>
+              <FormControlLabelText className="text-typography-0 text-xl">
+                Confirm Password
+              </FormControlLabelText>
+            </FormControlLabel>
+            <Controller
+              control={control}
+              name="confirm_password"
+              render={({ field: { onChange, onBlur, value } }) => (
+                <Input size="xl">
+                  <InputField
+                    placeholder="Confirm your password"
+                    value={value}
+                    onChangeText={onChange}
+                    onBlur={onBlur}
+                    secureTextEntry
+                    autoComplete="new-password"
+                  />
+                </Input>
+              )}
+            />
+            <FormControlError>
+              <FormControlErrorText>
+                {errors.confirm_password?.message}
               </FormControlErrorText>
             </FormControlError>
           </FormControl>

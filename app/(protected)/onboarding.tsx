@@ -39,11 +39,11 @@ const OnboardingSchema = z.object({
   study_schedule: z.string().min(1, "Study schedule is required"),
   communication_style: z.string().min(1, "Communication style is required"),
   bio: z.string().min(1, "Bio is required"),
-  exam_id: z.string().optional(),
-  study_start_date: z.string().optional(),
-  study_end_date: z.string().optional(),
-  daily_study_time: z.string().optional(),
-  intensity: z.enum(["light", "moderate", "intense"]).optional(),
+  exam_id: z.string().min(1, "Exam is required"),
+  study_start_date: z.string().min(1, "Study start date is required"),
+  study_end_date: z.string().min(1, "Study end date is required"),
+  daily_study_time: z.string().min(1, "Daily study time is required"),
+  intensity: z.enum(["light", "moderate", "intense"]),
 });
 
 type OnboardingData = z.infer<typeof OnboardingSchema>;
@@ -175,7 +175,7 @@ export default function OnboardingScreen() {
     }
   };
 
-  const renderStep = () => {
+  const RenderStep = () => {
     switch (currentStep) {
       case 1:
         return (
@@ -306,7 +306,6 @@ export default function OnboardingScreen() {
                 name="region"
                 render={({ field: { onChange, value } }) => (
                   <ElementDropdown
-                    key={`region-${currentStep}`}
                     value={value}
                     onValueChange={onChange}
                     placeholder="Select your country"
@@ -342,7 +341,6 @@ export default function OnboardingScreen() {
                 name="course"
                 render={({ field: { onChange, value } }) => (
                   <ElementDropdown
-                    key={`course-${currentStep}`}
                     value={value}
                     onValueChange={(selectedCourse) => {
                       onChange(selectedCourse);
@@ -428,7 +426,6 @@ export default function OnboardingScreen() {
                 name="study_schedule"
                 render={({ field: { onChange, value } }) => (
                   <ElementDropdown
-                    key={`study_schedule-${currentStep}`}
                     value={value}
                     onValueChange={onChange}
                     placeholder="When do you prefer to study?"
@@ -464,7 +461,6 @@ export default function OnboardingScreen() {
                 name="communication_style"
                 render={({ field: { onChange, value } }) => (
                   <ElementDropdown
-                    key={`communication_style-${currentStep}`}
                     value={value}
                     onValueChange={onChange}
                     placeholder="How do you like to communicate?"
@@ -606,7 +602,6 @@ export default function OnboardingScreen() {
                 name="daily_study_time"
                 render={({ field: { onChange, value } }) => (
                   <ElementDropdown
-                    key={`daily_study_time-${currentStep}`}
                     value={value}
                     onValueChange={onChange}
                     placeholder="How many hours per day?"
@@ -707,7 +702,7 @@ export default function OnboardingScreen() {
           </VStack>
 
           {/* Current Step Content */}
-          {renderStep()}
+          <RenderStep />
         </VStack>
       </ScrollView>
       {/* Navigation Buttons */}

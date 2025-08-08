@@ -26,6 +26,9 @@ export const ElementDropdown: React.FC<ElementDropdownProps> = ({
 }) => {
   const { colors } = useTheme();
 
+  // Find the matching item object for the string value
+  const selectedItem = value ? items.find(item => item.value === value) : null;
+
   const getHeight = () => {
     switch (size) {
       case "sm":
@@ -81,7 +84,7 @@ export const ElementDropdown: React.FC<ElementDropdownProps> = ({
       valueField="value"
       placeholder={placeholder}
       searchPlaceholder="Search..."
-      value={value}
+      value={selectedItem || null}
       onChange={(item) => {
         onValueChange(item.value);
       }}

@@ -2,11 +2,17 @@
 import { z } from "zod";
 
 // Auth Schemas
-export const SignUpSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(6),
-  full_name: z.string().min(1),
-});
+export const SignUpSchema = z
+  .object({
+    email: z.string().email(),
+    password: z.string().min(6),
+    full_name: z.string().min(1),
+    confirm_password: z.string().min(6),
+  })
+  .refine((data) => data.password === data.confirm_password, {
+    message: "Passwords do not match",
+    path: ["confirm_password"],
+  });
 
 export const LoginSchema = z.object({
   email: z.string().email(),
@@ -172,13 +178,26 @@ export interface PotentialMatch {
   daily_study_time: string;
   intensity: string;
   created_at: string;
-  match_score: number;
-  exam_match: boolean;
-  intensity_match: boolean;
-  date_overlap: boolean;
-  overlap_days: number;
   full_name: string;
   gender: string | null;
+  // New exam details
+  exam_name: string;
+  exam_category: string;
+  exam_country: string;
+  exam_field: string;
+  match_score?: number;
+  exam_match?: boolean;
+  intensity_match?: boolean;
+  date_overlap?: boolean;
+  overlap_days?: number;
+  // Nested exam object from API
+  exams?: {
+    id: string;
+    name: string;
+    field: string;
+    country: string;
+    category: string;
+  };
 }
 
 export interface PotentialMatchesResponse {

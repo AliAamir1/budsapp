@@ -32,13 +32,12 @@ interface UserCardProps {
     daily_study_time: string;
     intensity: string;
     created_at: string;
-    match_score: number;
-    exam_match: boolean;
-    intensity_match: boolean;
-    date_overlap: boolean;
-    overlap_days: number;
     full_name: string;
     gender: string | null;
+    exam_name: string;
+    exam_category: string;
+    exam_country: string;
+    exam_field: string;
   };
   index: number;
   onSwipe: (direction: "left" | "right", userId: string) => void;
@@ -49,14 +48,40 @@ const UserCard: React.FC<UserCardProps> = ({ user, index, onSwipe, isTop }) => {
   const { colors } = useTheme();
   const translateX = useSharedValue(0);
   const translateY = useSharedValue(0);
-  const scale = useSharedValue(isTop ? 1 : 0.95);
-  const opacity = useSharedValue(1);
+  const scale = useSharedValue(isTop ? 1 : 0.85); // Increased scale difference for better visibility
+  const opacity = useSharedValue(0); // Start with opacity 0 for entrance animation
   const rotation = useSharedValue(0);
   const circleScale = useSharedValue(0);
   const circleOpacity = useSharedValue(0);
   const cardColor = useSharedValue(colors.background[0]); // Default white color
   const leftCircleOpacity = useSharedValue(0);
   const rightCircleOpacity = useSharedValue(0);
+
+  // Entrance animation
+  React.useEffect(() => {
+    // Stagger the entrance animation based on index
+    const delay = index * 100;
+    setTimeout(() => {
+      opacity.value = withSpring(1, { damping: 20, stiffness: 200 });
+    }, delay);
+  }, [index]);
+
+  // Smooth transition to top position when card becomes active
+  React.useEffect(() => {
+    if (isTop) {
+      // Animate to top position with smooth transition
+      scale.value = withSpring(1, { damping: 20, stiffness: 200 });
+      translateY.value = withSpring(0, { damping: 20, stiffness: 200 });
+      translateX.value = withSpring(0, { damping: 20, stiffness: 200 });
+      rotation.value = withSpring(0, { damping: 20, stiffness: 200 });
+    } else {
+      // Animate to background position with subtle rotation
+      scale.value = withSpring(0.85, { damping: 20, stiffness: 200 });
+      translateY.value = withSpring(index * 15, { damping: 20, stiffness: 200 });
+      translateX.value = withSpring(0, { damping: 20, stiffness: 200 });
+      rotation.value = withSpring(index % 2 === 0 ? 2 : -2, { damping: 20, stiffness: 200 });
+    }
+  }, [isTop, index]);
 
   const handleSwipe = (direction: "left" | "right") => {
     // Right swipe = match, Left swipe = pass
@@ -71,6 +96,12 @@ const UserCard: React.FC<UserCardProps> = ({ user, index, onSwipe, isTop }) => {
       if (!isTop) return;
       translateX.value = context.startX + event.translationX;
       translateY.value = event.translationY * 0.1;
+
+      // Add subtle scale effect during swipe
+      const swipeProgress = Math.abs(translateX.value) / SWIPE_THRESHOLD;
+      if (swipeProgress > 0.1) {
+        scale.value = withSpring(1 + swipeProgress * 0.05, { damping: 15 });
+      }
 
       // Show visual feedback during swipe
       const progress = Math.abs(translateX.value) / SWIPE_THRESHOLD;
@@ -149,6 +180,7 @@ const UserCard: React.FC<UserCardProps> = ({ user, index, onSwipe, isTop }) => {
         rightCircleOpacity.value = withSpring(0);
         rotation.value = withSpring(0);
         cardColor.value = withSpring(colors.background[0]);
+        scale.value = withSpring(1, { damping: 20, stiffness: 200 }); // Reset scale
       }
     },
   });
@@ -171,6 +203,8 @@ const UserCard: React.FC<UserCardProps> = ({ user, index, onSwipe, isTop }) => {
       backgroundColor: cardColor.value,
       borderRadius: 24,
       overflow: "hidden",
+      borderWidth: 2,
+      borderColor: isTop ? colors.primary[300] : colors.background[100],
     };
   });
 
@@ -197,13 +231,19 @@ const UserCard: React.FC<UserCardProps> = ({ user, index, onSwipe, isTop }) => {
             width: screenWidth * 0.875,
             height: 420,
             alignSelf: "center",
-            top: 50,
+            top: 10 + (index * 8), // Reduced spacing for tighter stack
           },
           animatedStyle,
         ]}
       >
         <Animated.View style={[cardAnimatedStyle]}>
-          <Box className="rounded-3xl p-6 border-4   shadow-lg">
+          <Box className="rounded-3xl p-6 border-4 shadow-lg" style={{
+            shadowColor: colors.primary[500],
+            shadowOffset: { width: 0, height: index * 3 },
+            shadowOpacity: isTop ? 0.4 : 0.15,
+            shadowRadius: isTop ? 15 : 8,
+            elevation: isTop ? 12 : 6,
+          }}>
             {/* Swipe Feedback Circles */}
             <Animated.View
               style={[
@@ -277,10 +317,10 @@ const UserCard: React.FC<UserCardProps> = ({ user, index, onSwipe, isTop }) => {
 
                 <HStack className="justify-between items-center border-b border-typography-300 pb-2">
                   <Text className="text-primary-500 font-semibold text-lg">
-                    Match Score:
+                    Exam:
                   </Text>
                   <Text className="text-typography-0 text-lg font-semibold">
-                    {user.match_score}%
+                    {user.exam_name}
                   </Text>
                 </HStack>
 
@@ -326,10 +366,26 @@ const UserCard: React.FC<UserCardProps> = ({ user, index, onSwipe, isTop }) => {
 
                 <HStack className="justify-between items-center pt-2">
                   <Text className="text-primary-500 font-semibold text-lg">
-                    Overlap:
+                    Exam Field:
                   </Text>
                   <Text className="text-typography-0 text-base font-semibold">
-                    {user.overlap_days} days
+                    {user.exam_field}
+                  </Text>
+                </HStack>
+                <HStack className="justify-between items-center pt-2">
+                  <Text className="text-primary-500 font-semibold text-lg">
+                    Exam Category:
+                  </Text>
+                  <Text className="text-typography-0 text-base font-semibold">
+                    {user.exam_category}
+                  </Text>
+                </HStack>
+                <HStack className="justify-between items-center pt-2">
+                  <Text className="text-primary-500 font-semibold text-lg">
+                    Exam Country:
+                  </Text>
+                  <Text className="text-typography-0 text-base font-semibold">
+                    {user.exam_country}
                   </Text>
                 </HStack>
               </VStack>
@@ -371,7 +427,7 @@ export default function HomeScreen() {
   // Fetch potential matches from API
   const {
     data: potentialMatches,
-    isFetching: isLoading,
+    isLoading,
     error,
     refetch,
   } = usePotentialMatches(
@@ -406,10 +462,10 @@ export default function HomeScreen() {
       );
     }
 
-    // Move to next card
+    // Move to next card with smoother transition
     setTimeout(() => {
       setCurrentIndex((prev) => prev + 1);
-    }, 300);
+    }, 200); // Reduced delay for smoother transition
   };
 
   // Show loading state
@@ -455,7 +511,7 @@ export default function HomeScreen() {
 
   const users = potentialMatches?.data?.matches || [];
   console.log("potentialMatches", potentialMatches);
-  const visibleUsers = users?.slice(currentIndex, currentIndex + 3) || [];
+  const visibleUsers = users?.slice(currentIndex, currentIndex + 5) || []; // Show more cards for better visual feedback
 
   if (currentIndex >= users.length || users.length === 0) {
     return (
@@ -480,7 +536,7 @@ export default function HomeScreen() {
   return (
     <Box className="flex-1 bg-background-0">
       {/* Header */}
-      <VStack className="pt-16 pb-4 items-center">
+      <VStack className="pt-4 pb-4 items-center">
         <Image
           source={require("@/assets/images/chick.png")}
           style={{ width: 60, height: 60 }}
@@ -491,7 +547,7 @@ export default function HomeScreen() {
       </VStack>
 
       {/* Cards Stack */}
-      <View style={{ flex: 1, height: "100%" }}>
+      <View>
         {visibleUsers.map((user, index) => (
           <UserCard
             key={user.user_id}
