@@ -6,6 +6,8 @@ import {
   UseQueryResult,
 } from "@tanstack/react-query";
 import { apiClient } from "./api-client";
+import { ChatService } from "./chat-service";
+import { Chat } from "./supabase";
 import {
   ApiError,
   AuthResponse,
@@ -27,6 +29,7 @@ export const queryKeys = {
   potentialMatches: (userId: string) =>
     ["matches", "potential", userId] as const,
   matchedUsers: (userId: string) => ["matches", "matched", userId] as const,
+  userChats: (userId: string) => ["chats", userId] as const,
   exams: ["exams"] as const,
   profile: ["profile"] as const,
 } as const;
@@ -110,6 +113,19 @@ export const useMatchedUsers = (
     queryFn: () => apiClient.findMatchedUsers(userId),
     enabled: enabled && !!userId,
     staleTime: 2 * 60 * 1000, // 2 minutes
+  });
+};
+
+// Chats Query (Supabase)
+export const useUserChats = (
+  userId: string,
+  enabled: boolean = true
+): UseQueryResult<Chat[], ApiError> => {
+  return useQuery({
+    queryKey: queryKeys.userChats(userId),
+    queryFn: () => ChatService.getUserChats(userId),
+    enabled: enabled && !!userId,
+    staleTime: 30 * 1000, // chats can update frequently; keep short
   });
 };
 

@@ -2,7 +2,12 @@ import { Chat, Match, Message, supabase } from "./supabase";
 
 export class ChatService {
   // Get or create a chat between two users
-  static async getOrCreateChat(user1Id: string, user2Id: string): Promise<Chat> {
+  static async getOrCreateChat(
+    user1Id: string,
+    user2Id: string,
+    user1Name?: string,
+    user2Name?: string
+  ): Promise<Chat> {
     // First, try to find an existing chat
     const { data: existingChats, error: findError } = await supabase
       .from("chat")
@@ -29,9 +34,12 @@ export class ChatService {
       .insert({
         recipient_one: user1Id,
         recipient_two: user2Id,
+        ...(user1Name ? { recipient_one_name: user1Name } : {}),
+        ...(user2Name ? { recipient_two_name: user2Name } : {}),
       })
       .select()
       .single();
+      
 
     if (createError) {
       throw new Error(`Failed to create chat: ${createError.message}`);
@@ -47,7 +55,10 @@ export class ChatService {
       .from("chat")
       .select("*")
       .or(`recipient_one.eq.${userId},recipient_two.eq.${userId}`)
-      .order("updated_at", { ascending: false });
+      // Sort by most recently updated first, pushing nulls to the bottom
+      .order("updated_at", { ascending: false, nullsFirst: false })
+      // Tie-breaker: newest chats first if updated_at is null
+      .order("created_at", { ascending: false, nullsFirst: false });
 
     console.log("getUserChats", data);
 

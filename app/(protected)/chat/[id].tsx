@@ -41,7 +41,7 @@ export default function ChatScreen() {
     partnerName?: string;
   }>();
   const router = useRouter();
-  const { getCurrentUserId } = useAuth();
+  const { getCurrentUserId, user } = useAuth();
   const currentUserId = getCurrentUserId();
   // const insets = useSafeAreaInsets();
   const flatListRef = useRef<FlatList>(null);
@@ -71,7 +71,12 @@ export default function ChatScreen() {
       setIsLoading(true);
 
       // Get or create the actual chat
-      const chat = await ChatService.getOrCreateChat(currentUserId, partnerId);
+      const chat = await ChatService.getOrCreateChat(
+        currentUserId,
+        partnerId,
+        user?.name || undefined,
+        partnerName || undefined
+      );
       setActualChatId(chat.id);
 
       // Get messages

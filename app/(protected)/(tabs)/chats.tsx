@@ -21,7 +21,7 @@ import { VStack } from "@/components/ui/vstack";
 import { useTheme } from "@/hooks/useTheme";
 import { useAuth } from "@/lib/auth-context";
 import { ChatService } from "@/lib/chat-service";
-import { useMatchedUsers, useUpdateMatchStatus } from "@/lib/queries";
+import { useMatchedUsers, useUpdateMatchStatus, useUserChats } from "@/lib/queries";
 import { Match } from "@/lib/types";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -36,28 +36,36 @@ export default function ChatsScreen() {
   const [activeTab, setActiveTab] = useState<TabType>("conversations");
   const [isUpdatingMatch, setIsUpdatingMatch] = useState<string | null>(null);
 
-  // Use the useMatchedUsers query instead of manual state management
+  // Queries for counts & data
   const {
     data: matchesData,
-    isLoading,
-    error,
-    refetch,
+    isLoading: isLoadingMatches,
+    error: matchesError,
+    refetch: refetchMatches,
   } = useMatchedUsers(currentUserId || "", !!currentUserId);
+  const {
+    data: chatsData,
+    isLoading: isLoadingChats,
+    error: chatsError,
+    refetch: refetchChats,
+  } = useUserChats(currentUserId || "", !!currentUserId);
 
   const updateMatchStatusMutation = useUpdateMatchStatus();
 
   const matches = matchesData?.data?.matches || [];
+  const chats = chatsData || [];
 
   // Refetch when tab becomes focused
   useFocusEffect(
     React.useCallback(() => {
       if (currentUserId) {
-        refetch();
+        refetchMatches();
+        refetchChats();
       }
-    }, [currentUserId, refetch])
+    }, [currentUserId, refetchMatches, refetchChats])
   );
 
-  // Set up real-time subscription for match updates
+  // Top-level subscriptions so counts update regardless of active tab
   useEffect(() => {
     if (!currentUserId) return;
 
@@ -65,14 +73,9 @@ export default function ChatsScreen() {
       currentUserId,
       (updatedMatch) => {
         console.log("Real-time match update received:", updatedMatch);
-
-        // Update the query cache directly instead of managing local state
-        refetch();
-
-        // Also invalidate the query to ensure fresh data
-        queryClient.invalidateQueries({
-          queryKey: ["matches", "matched", currentUserId],
-        });
+        // Refresh new matches data and counts
+        refetchMatches();
+        queryClient.invalidateQueries({ queryKey: ["matches", "matched", currentUserId] });
       }
     );
 
@@ -80,7 +83,8 @@ export default function ChatsScreen() {
       currentUserId,
       (updatedChat) => {
         console.log("Chat update received:", updatedChat);
-        refetch();
+        // Refresh conversations data and counts
+        refetchChats();
       }
     );
 
@@ -91,45 +95,17 @@ export default function ChatsScreen() {
     };
   }, [currentUserId, queryClient]);
 
-  // Filter matches based on active tab
-  const getFilteredMatches = () => {
-    if (!currentUserId) return [];
+  // Derived counts
+  const conversationsCount = chats.length;
+  const newMatchesCount = matches.filter(
+    (m) => m.status === "pending" && m.user1_id !== currentUserId
+  ).length;
 
-    return matches.filter((match) => {
-      const isCurrentUserInitiator = match.user1_id === currentUserId;
-      const isPending = match.status === "pending";
-      const isMatched = match.status === "matched";
-
-      if (activeTab === "conversations") {
-        // Show accepted matches (conversations)
-        return isMatched;
-      } else {
-        // Show pending matches where current user is NOT the initiator (new matches)
-        return isPending && !isCurrentUserInitiator;
-      }
-    });
-  };
-
-  const handleMatchPress = (match: Match) => {
-    // Only allow navigation for matched conversations
-    if (match.status !== "matched") return;
-
-    // Get the partner's ID (the other user in the match)
-    const partnerId =
-      match.user1_id === currentUserId ? match.user2_id : match.user1_id;
-    const partnerProfile =
-      match.user1_id === currentUserId
-        ? match.user2_profile
-        : match.user1_profile;
-
-    // Navigate to the chat screen with the match ID as chat ID
+  // Navigation helpers
+  const openChatByPartner = (partnerId: string, partnerName?: string, chatId?: string) => {
     router.push({
       pathname: "/(protected)/chat/[id]",
-      params: {
-        id: match.id,
-        partnerId: partnerId,
-        partnerName: partnerProfile.full_name,
-      },
+      params: { id: chatId || "", partnerId, partnerName: partnerName || "" },
     });
   };
 
@@ -162,7 +138,9 @@ export default function ChatsScreen() {
           // Create or get the chat between the two users
           const chat = await ChatService.getOrCreateChat(
             currentUserId,
-            partnerId
+            partnerId,
+            user?.name || undefined,
+            partnerProfile.full_name || undefined
           );
           console.log("Created/found chat:", chat);
 
@@ -196,7 +174,8 @@ export default function ChatsScreen() {
     }
   };
 
-  const renderMatchItem = ({ item: match }: { item: Match }) => {
+  // New Matches list item
+  const renderNewMatchItem = ({ item: match }: { item: Match }) => {
     const partnerProfile =
       match.user1_id === currentUserId
         ? match.user2_profile
@@ -209,7 +188,15 @@ export default function ChatsScreen() {
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1 }}
       >
-        <Pressable onPress={() => handleMatchPress(match)} disabled={isPending}>
+        <Pressable
+          onPress={() => {
+            if (!isMatched) return;
+            const partnerId =
+              match.user1_id === currentUserId ? match.user2_id : match.user1_id;
+            openChatByPartner(partnerId, partnerProfile.full_name, match.id);
+          }}
+          disabled={isPending}
+        >
           <Box className="bg-background-0 rounded-xl p-4 border border-outline-200 mb-3">
             <HStack space="md" className="items-center">
               {/* Profile Avatar */}
@@ -243,7 +230,7 @@ export default function ChatsScreen() {
               </VStack>
 
               {/* Action Buttons or Arrow */}
-              {activeTab === "new-matches" && isPending ? (
+              {isPending ? (
                 <HStack space="sm">
                   <Pressable
                     onPress={() => handleMatchAction(match, "reject")}
@@ -324,15 +311,128 @@ export default function ChatsScreen() {
     </Pressable>
   );
 
-  const filteredMatches = getFilteredMatches();
-  const conversationsCount = matches.filter(
-    (m) => m.status === "matched"
-  ).length;
-  const newMatchesCount = matches.filter(
-    (m) => m.status === "pending" && m.user1_id !== currentUserId
-  ).length;
+  // Component bodies for each tab
+  const NewMatchesList = () => {
+    const pendingMatches = matches.filter(
+      (m) => m.status === "pending" && m.user1_id !== currentUserId
+    );
 
-  if (isLoading) {
+    if (isLoadingMatches) {
+      return (
+        <VStack space="lg" className="flex-1 items-center justify-center">
+          <ActivityIndicator size="large" color={colors.primary[500]} />
+          <Text className="text-typography-400 text-lg">Loading new matches...</Text>
+        </VStack>
+      );
+    }
+
+    if (matchesError) {
+      return (
+        <VStack space="lg" className="flex-1 items-center justify-center">
+          <Heading size="xl" className="text-error-500">Oops!</Heading>
+          <Text className="text-typography-400 text-lg text-center">Failed to load matches.</Text>
+        </VStack>
+      );
+    }
+
+    if (pendingMatches.length === 0) {
+      return (
+        <VStack space="lg" className="flex-1 items-center justify-center">
+          <Image source={require("@/assets/images/chick.png")} style={{ width: 100, height: 100 }} />
+          <Heading size="xl" className="text-typography-400">No New Matches</Heading>
+          <Text className="text-typography-400 text-lg text-center">Start swiping to find study partners!</Text>
+        </VStack>
+      );
+    }
+
+    return (
+      <FlatList
+        data={pendingMatches}
+        renderItem={renderNewMatchItem}
+        keyExtractor={(item) => item.id}
+        showsVerticalScrollIndicator={false}
+        refreshControl={<RefreshControl refreshing={isLoadingMatches} onRefresh={refetchMatches} />}
+        contentContainerStyle={{ paddingBottom: 100 }}
+      />
+    );
+  };
+
+  const ConversationsList = () => {
+    if (isLoadingChats) {
+      return (
+        <VStack space="lg" className="flex-1 items-center justify-center">
+          <ActivityIndicator size="large" color={colors.primary[500]} />
+          <Text className="text-typography-400 text-lg">Loading conversations...</Text>
+        </VStack>
+      );
+    }
+
+    if (chatsError) {
+      return (
+        <VStack space="lg" className="flex-1 items-center justify-center">
+          <Heading size="xl" className="text-error-500">Oops!</Heading>
+          <Text className="text-typography-400 text-lg text-center">Failed to load conversations.</Text>
+        </VStack>
+      );
+    }
+
+    if (chats.length === 0) {
+      return (
+        <VStack space="lg" className="flex-1 items-center justify-center">
+          <Image source={require("@/assets/images/chick.png")} style={{ width: 100, height: 100 }} />
+          <Heading size="xl" className="text-typography-400">No Conversations Yet</Heading>
+          <Text className="text-typography-400 text-lg text-center">Start accepting matches to begin conversations!</Text>
+        </VStack>
+      );
+    }
+
+    return (
+      <FlatList
+        data={chats}
+        keyExtractor={(item) => item.id}
+        showsVerticalScrollIndicator={false}
+        refreshControl={<RefreshControl refreshing={isLoadingChats} onRefresh={refetchChats} />}
+        contentContainerStyle={{ paddingBottom: 100 }}
+        renderItem={({ item }) => {
+          const isRecipientOne = item.recipient_one === currentUserId;
+          const partnerId = isRecipientOne ? item.recipient_two : item.recipient_one;
+          const partnerName = isRecipientOne ? item.recipient_two_name : item.recipient_one_name;
+          return (
+            <Pressable onPress={() => openChatByPartner(partnerId, partnerName, item.id)}>
+              <Box className="bg-background-0 rounded-xl p-4 border border-outline-200 mb-3">
+                <HStack space="md" className="items-center">
+                  <View
+                    style={{
+                      width: 60,
+                      height: 60,
+                      borderRadius: 30,
+                      backgroundColor: colors.primary[500],
+                      justifyContent: "center",
+                      alignItems: "center",
+                    }}
+                  >
+                    <Image source={require("@/assets/images/chick.png")} style={{ width: 40, height: 40 }} />
+                  </View>
+                  <VStack space="xs" className="flex-1">
+                    <Text className="text-typography-0 text-lg font-semibold">{partnerName || "Conversation"}</Text>
+                    {!!item.last_message && (
+                      <Text className="text-typography-500 text-sm" numberOfLines={1}>{item.last_message}</Text>
+                    )}
+                    {!!item.updated_at && (
+                      <Text className="text-typography-400 text-xs">{new Date(item.updated_at).toLocaleString()}</Text>
+                    )}
+                  </VStack>
+                  <Text className="text-typography-400 text-xl">›</Text>
+                </HStack>
+              </Box>
+            </Pressable>
+          );
+        }}
+      />
+    );
+  };
+
+  if (isLoadingMatches && isLoadingChats) {
     return (
       <Box className="flex-1 bg-background-0 px-6 pt-16">
         <VStack space="lg" className="items-center">
@@ -341,15 +441,13 @@ export default function ChatsScreen() {
             style={{ width: 100, height: 100 }}
           />
           <ActivityIndicator size="large" color={colors.primary[500]} />
-          <Text className="text-typography-400 text-lg">
-            Loading matches...
-          </Text>
+          <Text className="text-typography-400 text-lg">Loading...</Text>
         </VStack>
       </Box>
     );
   }
 
-  if (error) {
+  if (matchesError || chatsError) {
     return (
       <Box className="flex-1 bg-background-0 px-6 pt-16">
         <VStack space="lg" className="items-center">
@@ -361,7 +459,7 @@ export default function ChatsScreen() {
             Oops!
           </Heading>
           <Text className="text-typography-400 text-lg text-center">
-            Failed to load matches. Please try again.
+            Failed to load data. Please try again.
           </Text>
         </VStack>
       </Box>
@@ -386,36 +484,7 @@ export default function ChatsScreen() {
           {renderTabButton("new-matches", "New Matches", newMatchesCount)}
         </HStack>
 
-        {/* Matches List */}
-        {filteredMatches.length === 0 ? (
-          <VStack space="lg" className="flex-1 items-center justify-center">
-            <Image
-              source={require("@/assets/images/chick.png")}
-              style={{ width: 100, height: 100 }}
-            />
-            <Heading size="xl" className="text-typography-400">
-              {activeTab === "conversations"
-                ? "No Conversations Yet"
-                : "No New Matches"}
-            </Heading>
-            <Text className="text-typography-400 text-lg text-center">
-              {activeTab === "conversations"
-                ? "Start accepting matches to begin conversations!"
-                : "Start swiping to find study partners!"}
-            </Text>
-          </VStack>
-        ) : (
-          <FlatList
-            data={filteredMatches}
-            renderItem={renderMatchItem}
-            keyExtractor={(item) => item.id}
-            showsVerticalScrollIndicator={false}
-            refreshControl={
-              <RefreshControl refreshing={isLoading} onRefresh={refetch} />
-            }
-            contentContainerStyle={{ paddingBottom: 100 }}
-          />
-        )}
+        {activeTab === "conversations" ? <ConversationsList /> : <NewMatchesList />}
       </VStack>
     </Box>
   );
