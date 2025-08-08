@@ -24,7 +24,6 @@ import { useAuth } from "@/lib/auth-context";
 import { useLogin } from "@/lib/queries";
 import { SupabaseAuth } from "@/lib/supabase-auth";
 import { LoginData, LoginSchema } from "@/lib/types";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -67,30 +66,26 @@ export default function LoginScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1  bg-background-0 px-6">
-      <KeyboardAwareScrollView
-        style={{ flex: 1, paddingHorizontal: 20 }}
-        contentContainerStyle={{ flexGrow: 1, justifyContent: "center" }}
-        enableOnAndroid={true}
-        extraScrollHeight={20} // give a little breathing room
-        keyboardShouldPersistTaps="handled"
-      >
-        <VStack space="xl" className="w-full max-w-md mx-auto">
-          {/* Header */}
-          <VStack space="md">
-            <Heading size="3xl" className="text-center text-primary-500">
-              Buds
-            </Heading>
-            <Text
-              size="lg"
-              className="text-center text-typography-0 font-medium"
-            >
-              Meet, Study, Connect
-            </Text>
+    <KeyboardAwareScrollView
+      style={{ flex: 1, paddingHorizontal: 20 }}
+      contentContainerStyle={{ flexGrow: 1, justifyContent: "center" }}
+      enableOnAndroid={true}
+      extraScrollHeight={20} // give a little breathing room
+      keyboardShouldPersistTaps="handled"
+    >
+      <VStack space="xl" className="w-full max-w-md mx-auto">
+        {/* Header */}
+        <VStack space="md">
+          <Heading size="3xl" className="text-center text-primary-500">
+            Buds
+          </Heading>
+          <Text size="lg" className="text-center text-typography-0 font-medium">
+            Meet, Study, Connect
+          </Text>
 
-            {/* Chick Characters */}
-            <HStack space="md" className="items-center justify-center my-4">
-              {/* <Image 
+          {/* Chick Characters */}
+          <HStack space="md" className="items-center justify-center my-4">
+            {/* <Image 
               source={require('@/assets/images/chick.png')} 
               alt="Chick 1" 
               style={{ width: 60, height: 60 }}
@@ -100,113 +95,112 @@ export default function LoginScreen() {
               alt="Chick 2" 
               style={{ width: 60, height: 60 }}
             /> */}
-              <Image
-                source={require("@/assets/images/logo.png")}
-                alt="Chick 2"
-                style={{ width: 160, height: 80 }}
-              />
-            </HStack>
-
-            <Text
-              size="3xl"
-              className="text-center text-primary-500 italic font-bold"
-            >
-              Login
-            </Text>
-          </VStack>
-
-          {/* Form */}
-
-          <VStack space="lg">
-            {/* Email Field */}
-            <FormControl isInvalid={!!errors.email}>
-              <FormControlLabel>
-                <FormControlLabelText className="text-typography-0 text-xl">
-                  Email
-                </FormControlLabelText>
-              </FormControlLabel>
-              <Controller
-                control={control}
-                name="email"
-                render={({ field: { onChange, onBlur, value } }) => (
-                  <Input size="xl" className="px-4 rounded-xl">
-                    <InputField
-                      placeholder="Enter your email"
-                      value={value}
-                      onChangeText={onChange}
-                      onBlur={onBlur}
-                      keyboardType="email-address"
-                      autoCapitalize="none"
-                      autoComplete="email"
-                      className="text-xl"
-                    />
-                  </Input>
-                )}
-              />
-              <FormControlError>
-                <FormControlErrorText className="text-lg">
-                  {errors.email?.message}
-                </FormControlErrorText>
-              </FormControlError>
-            </FormControl>
-
-            {/* Password Field */}
-            <FormControl isInvalid={!!errors.password}>
-              <FormControlLabel>
-                <FormControlLabelText className="text-typography-0 text-xl">
-                  Password
-                </FormControlLabelText>
-              </FormControlLabel>
-              <Controller
-                control={control}
-                name="password"
-                render={({ field: { onChange, onBlur, value } }) => (
-                  <Input className="px-4 rounded-xl" size="xl">
-                    <InputField
-                      placeholder="Enter your password"
-                      value={value}
-                      onChangeText={onChange}
-                      onBlur={onBlur}
-                      secureTextEntry
-                      autoComplete="password"
-                      className="text-xl"
-                    />
-                  </Input>
-                )}
-              />
-              <FormControlError>
-                <FormControlErrorText className="text-lg">
-                  {errors.password?.message}
-                </FormControlErrorText>
-              </FormControlError>
-            </FormControl>
-
-            {/* Login Button */}
-            <Button
-              onPress={handleSubmit(onSubmit)}
-              isDisabled={loginMutation.isPending}
-              className="mt-4 bg-primary-500 rounded-full"
-              size="lg"
-            >
-              <ButtonText className="text-white font-semibold text-xl">
-                {loginMutation.isPending ? "Signing In..." : "Sign In"}
-              </ButtonText>
-            </Button>
-          </VStack>
-
-          {/* Footer */}
-          <HStack space="sm" className="justify-center">
-            <Text size="lg" className="text-typography-200">
-              Don't have an account?
-            </Text>
-            <Link href="/(auth)/register" asChild>
-              <Text size="lg" className="text-primary-500 font-medium">
-                Sign Up
-              </Text>
-            </Link>
+            <Image
+              source={require("@/assets/images/logo.png")}
+              alt="Chick 2"
+              style={{ width: 160, height: 80 }}
+            />
           </HStack>
+
+          <Text
+            size="3xl"
+            className="text-center text-primary-500 italic font-bold"
+          >
+            Login
+          </Text>
         </VStack>
-      </KeyboardAwareScrollView>
-    </SafeAreaView>
+
+        {/* Form */}
+
+        <VStack space="lg">
+          {/* Email Field */}
+          <FormControl isInvalid={!!errors.email}>
+            <FormControlLabel>
+              <FormControlLabelText className="text-typography-0 text-xl">
+                Email
+              </FormControlLabelText>
+            </FormControlLabel>
+            <Controller
+              control={control}
+              name="email"
+              render={({ field: { onChange, onBlur, value } }) => (
+                <Input size="xl" className="px-4 rounded-xl">
+                  <InputField
+                    placeholder="Enter your email"
+                    value={value}
+                    onChangeText={onChange}
+                    onBlur={onBlur}
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                    autoComplete="email"
+                    className="text-xl"
+                  />
+                </Input>
+              )}
+            />
+            <FormControlError>
+              <FormControlErrorText className="text-lg">
+                {errors.email?.message}
+              </FormControlErrorText>
+            </FormControlError>
+          </FormControl>
+
+          {/* Password Field */}
+          <FormControl isInvalid={!!errors.password}>
+            <FormControlLabel>
+              <FormControlLabelText className="text-typography-0 text-xl">
+                Password
+              </FormControlLabelText>
+            </FormControlLabel>
+            <Controller
+              control={control}
+              name="password"
+              render={({ field: { onChange, onBlur, value } }) => (
+                <Input className="px-4 rounded-xl" size="xl">
+                  <InputField
+                    placeholder="Enter your password"
+                    value={value}
+                    onChangeText={onChange}
+                    onBlur={onBlur}
+                    secureTextEntry
+                    autoComplete="password"
+                    className="text-xl"
+                  />
+                </Input>
+              )}
+            />
+            <FormControlError>
+              <FormControlErrorText className="text-lg">
+                {errors.password?.message}
+              </FormControlErrorText>
+            </FormControlError>
+          </FormControl>
+
+          {/* Login Button */}
+          <Button
+            onPress={handleSubmit(onSubmit)}
+            isDisabled={loginMutation.isPending}
+            className="mt-4 bg-primary-500 rounded-full"
+            size="lg"
+          >
+            <ButtonText className="text-white font-semibold text-xl">
+              {loginMutation.isPending ? "Signing In..." : "Sign In"}
+            </ButtonText>
+          </Button>
+        </VStack>
+
+        {/* Footer */}
+        <HStack space="sm" className="justify-center">
+          <Text size="lg" className="text-typography-200">
+            Don't have an account?
+          </Text>
+          <Link href="/(auth)/register" asChild>
+            <Text size="lg" className="text-primary-500 font-medium">
+              Sign Up
+            </Text>
+          </Link>
+        </HStack>
+      </VStack>
+    </KeyboardAwareScrollView>
   );
 }

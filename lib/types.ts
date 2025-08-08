@@ -1,5 +1,5 @@
 // API Types based on Postman collection
-import { z } from 'zod';
+import { z } from "zod";
 
 // Auth Schemas
 export const SignUpSchema = z.object({
@@ -13,26 +13,34 @@ export const LoginSchema = z.object({
   password: z.string().min(6),
 });
 
+export const RefreshSchema = z.object({
+  refresh_token: z.string().min(1),
+});
+
 export const UpdateProfileSchema = z.object({
   name: z.string().optional(),
-  gender: z.enum(['male', 'female', 'other']).optional(),
+  gender: z.enum(["male", "female", "other"]).optional(),
   birthdate: z.string().optional(), // ISO date string
   region: z.string().optional(),
   course: z.string().optional(),
   examDate: z.string().optional(), // ISO date string
-  partner_preferences: z.object({
-    study_schedule: z.string().optional(),
-    communication_style: z.string().optional(),
-  }).optional(),
+  partner_preferences: z
+    .object({
+      study_schedule: z.string().optional(),
+      communication_style: z.string().optional(),
+    })
+    .optional(),
   bio: z.string().optional(),
   is_premium: z.boolean().optional(),
-  examPreferences: z.object({
-    exam_id: z.string().uuid(),
-    study_start_date: z.string(), // ISO date string
-    study_end_date: z.string(), // ISO date string
-    daily_study_time: z.string(), // HH:mm:ss format
-    intensity: z.enum(['light', 'moderate', 'intense']),
-  }).optional(),
+  examPreferences: z
+    .object({
+      exam_id: z.string().uuid(),
+      study_start_date: z.string(), // ISO date string
+      study_end_date: z.string(), // ISO date string
+      daily_study_time: z.string(), // HH:mm:ss format
+      intensity: z.enum(["light", "moderate", "intense"]),
+    })
+    .optional(),
 });
 
 // Match Schemas
@@ -43,12 +51,13 @@ export const CreateMatchSchema = z.object({
 
 export const UpdateMatchSchema = z.object({
   matchId: z.string().uuid(),
-  status: z.enum(['pending', 'matched', 'rejected']),
+  status: z.enum(["pending", "matched", "rejected"]),
 });
 
 // Type inference
 export type SignUpData = z.infer<typeof SignUpSchema>;
 export type LoginData = z.infer<typeof LoginSchema>;
+export type RefreshData = z.infer<typeof RefreshSchema>;
 export type UpdateProfileData = z.infer<typeof UpdateProfileSchema>;
 export type CreateMatchData = z.infer<typeof CreateMatchSchema>;
 export type UpdateMatchData = z.infer<typeof UpdateMatchSchema>;
@@ -82,6 +91,25 @@ export interface AuthResponse {
   };
 }
 
+export interface RefreshResponse {
+  success: boolean;
+  message: string;
+  data: {
+    session: {
+      access_token: string;
+      token_type: string;
+      expires_in: number;
+      expires_at: number;
+      refresh_token: string;
+    };
+    user: {
+      id: string;
+      email: string;
+    };
+  };
+  error: null;
+}
+
 export interface ProfileResponse {
   data: {
     id: string;
@@ -112,7 +140,7 @@ export interface Match {
   user1_id: string;
   user2_id: string;
   matched_at: string;
-  status: 'pending' | 'matched' | 'rejected';
+  status: "pending" | "matched" | "rejected";
   partner_id: string;
   partner_display_name: string;
   partner_gender: string;

@@ -1,3 +1,11 @@
+import { Box } from "@/components/ui/box";
+import { HStack } from "@/components/ui/hstack";
+import { Text } from "@/components/ui/text";
+import { VStack } from "@/components/ui/vstack";
+import { useTheme } from "@/hooks/useTheme";
+import { useAuth } from "@/lib/auth-context";
+import { ChatService } from "@/lib/chat-service";
+import { Message } from "@/lib/supabase";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useCallback, useEffect, useRef, useState } from "react";
@@ -11,19 +19,8 @@ import {
   Pressable,
   StatusBar,
   TextInput,
-  TouchableWithoutFeedback,
-  View,
+  View
 } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-
-import { Box } from "@/components/ui/box";
-import { HStack } from "@/components/ui/hstack";
-import { Text } from "@/components/ui/text";
-import { VStack } from "@/components/ui/vstack";
-import { useTheme } from "@/hooks/useTheme";
-import { useAuth } from "@/lib/auth-context";
-import { ChatService } from "@/lib/chat-service";
-import { Message } from "@/lib/supabase";
 
 interface ChatMessage {
   id: string;
@@ -46,7 +43,7 @@ export default function ChatScreen() {
   const router = useRouter();
   const { getCurrentUserId } = useAuth();
   const currentUserId = getCurrentUserId();
-  const insets = useSafeAreaInsets();
+  // const insets = useSafeAreaInsets();
   const flatListRef = useRef<FlatList>(null);
   const inputRef = useRef<TextInput>(null);
   const { colors } = useTheme();
@@ -202,159 +199,157 @@ export default function ChatScreen() {
   );
 
   return (
-    <TouchableWithoutFeedback>
-      <Box className="flex-1 bg-background-0">
-        <StatusBar
-          barStyle="dark-content"
-          backgroundColor={colors.background[100]}
-        />
+    <Box className="flex-1 bg-background-0">
+      <StatusBar
+        barStyle="dark-content"
+        backgroundColor={colors.background[100]}
+      />
 
-        {/* Header with proper safe area handling */}
-        <Box
-          className="bg-background-100 border-b border-outline-200"
-          style={{
-            paddingTop: insets.top,
-            paddingBottom: 16,
-            paddingHorizontal: 16,
-          }}
-        >
-          <HStack space="md" className="items-center">
-            {/* Back button with proper icon */}
-            <Pressable
-              onPress={handleBackPress}
-              style={{
-                width: 40,
-                height: 40,
-                borderRadius: 20,
-                backgroundColor: "rgba(255, 255, 255, 0.1)",
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-            >
-              <Ionicons
-                name="arrow-back"
-                size={24}
-                color={colors.typography[0]}
-              />
-            </Pressable>
-
-            {/* User avatar */}
-            <View
-              style={{
-                width: 40,
-                height: 40,
-                borderRadius: 20,
-                backgroundColor: colors.primary[500],
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-            >
-              <Image
-                source={require("@/assets/images/chick.png")}
-                style={{ width: 30, height: 30 }}
-              />
-            </View>
-
-            {/* User info */}
-            <VStack space="xs" className="flex-1">
-              <Text className="text-typography-0 text-lg font-semibold">
-                {partnerName || "Study Partner"}
-              </Text>
-              {/* <Text className="text-typography-400 text-sm">
-                Online
-              </Text> */}
-            </VStack>
-          </HStack>
-        </Box>
-
-        {/* Messages with proper keyboard handling */}
-        <Box style={{ flex: 1 }}>
-          <FlatList
-            ref={flatListRef}
-            data={messages}
-            renderItem={renderMessage}
-            keyExtractor={(item) => item.id}
-            inverted
-            style={{ flex: 1, backgroundColor: colors.background[0] }}
-            contentContainerStyle={{
-              paddingVertical: 10,
-              flexGrow: 1,
-            }}
-            showsVerticalScrollIndicator={true}
-            scrollEnabled={true}
-            onContentSizeChange={() => {
-              if (messages.length > 0) {
-                flatListRef.current?.scrollToOffset({
-                  offset: 0,
-                  animated: true,
-                });
-              }
-            }}
-          />
-        </Box>
-
-        {/* Input with proper keyboard handling */}
-        <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
-          keyboardVerticalOffset={Platform.OS === "ios" ? 12 : 0}
-        >
-          <Box
-            className="bg-background-100 border-t border-outline-200"
+      {/* Header with proper safe area handling */}
+      <Box
+        className="bg-background-100 border-b border-outline-200"
+        style={{
+          // paddingTop: insets.top,
+          paddingBottom: 16,
+          paddingHorizontal: 16,
+        }}
+      >
+        <HStack space="md" className="items-center">
+          {/* Back button with proper icon */}
+          <Pressable
+            onPress={handleBackPress}
             style={{
-              paddingHorizontal: 16,
-              paddingTop: 12,
-              paddingBottom: insets.bottom + 12,
+              width: 40,
+              height: 40,
+              borderRadius: 20,
+              backgroundColor: "rgba(255, 255, 255, 0.1)",
+              justifyContent: "center",
+              alignItems: "center",
             }}
           >
-            <HStack className="items-center">
-              <TextInput
-                ref={inputRef}
-                value={newMessage}
-                onChangeText={setNewMessage}
-                placeholder="Type a message..."
-                placeholderTextColor={colors.typography[500]}
-                style={{
-                  flex: 1,
-                  backgroundColor: colors.background[200],
-                  color: colors.typography[0],
-                  paddingHorizontal: 12,
-                  paddingVertical: 8,
-                  borderRadius: 20,
-                  minHeight: 40,
-                  maxHeight: 100,
-                  textAlignVertical: "center",
-                  fontSize: 16,
-                  borderWidth: 1,
-                  borderColor: colors.outline[300],
-                }}
-                multiline
-                maxLength={500}
-                returnKeyType="send"
-                // onSubmitEditing={sendMessage}
-                blurOnSubmit={false}
-              />
-              <Pressable
-                onPress={sendMessage}
-                disabled={!newMessage.trim()}
-                style={{
-                  width: 50,
-                  height: 50,
-                  borderRadius: "50%",
-                  padding: 10,
-                  backgroundColor: newMessage.trim()
-                    ? colors.primary[500]
-                    : colors.outline[300],
-                  justifyContent: "center",
-                  alignItems: "center",
-                  marginLeft: 8,
-                }}
-              >
-                <Ionicons name="send" size={25} color="white" />
-              </Pressable>
-            </HStack>
-          </Box>
-        </KeyboardAvoidingView>
+            <Ionicons
+              name="arrow-back"
+              size={24}
+              color={colors.typography[0]}
+            />
+          </Pressable>
+
+          {/* User avatar */}
+          <View
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: 20,
+              backgroundColor: colors.primary[500],
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <Image
+              source={require("@/assets/images/chick.png")}
+              style={{ width: 30, height: 30 }}
+            />
+          </View>
+
+          {/* User info */}
+          <VStack space="xs" className="flex-1">
+            <Text className="text-typography-0 text-lg font-semibold">
+              {partnerName || "Study Partner"}
+            </Text>
+            {/* <Text className="text-typography-400 text-sm">
+                Online
+              </Text> */}
+          </VStack>
+        </HStack>
       </Box>
-    </TouchableWithoutFeedback>
+
+      {/* Messages with proper keyboard handling */}
+      <Box style={{ flex: 1 }}>
+        <FlatList
+          ref={flatListRef}
+          data={messages}
+          renderItem={renderMessage}
+          keyExtractor={(item) => item.id}
+          inverted
+          style={{ flex: 1, backgroundColor: colors.background[0] }}
+          contentContainerStyle={{
+            paddingVertical: 10,
+            flexGrow: 1,
+          }}
+          showsVerticalScrollIndicator={true}
+          scrollEnabled={true}
+          onContentSizeChange={() => {
+            if (messages.length > 0) {
+              flatListRef.current?.scrollToOffset({
+                offset: 0,
+                animated: true,
+              });
+            }
+          }}
+        />
+      </Box>
+
+      {/* Input with proper keyboard handling */}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 12 : 0}
+      >
+        <Box
+          className="bg-background-100 border-t border-outline-200"
+          style={{
+            paddingHorizontal: 16,
+            paddingTop: 12,
+            // paddingBottom: insets.bottom + 12,
+          }}
+        >
+          <HStack className="items-center">
+            <TextInput
+              ref={inputRef}
+              value={newMessage}
+              onChangeText={setNewMessage}
+              placeholder="Type a message..."
+              placeholderTextColor={colors.typography[500]}
+              style={{
+                flex: 1,
+                backgroundColor: colors.background[200],
+                color: colors.typography[0],
+                paddingHorizontal: 12,
+                paddingVertical: 8,
+                borderRadius: 20,
+                minHeight: 40,
+                maxHeight: 100,
+                textAlignVertical: "center",
+                fontSize: 16,
+                borderWidth: 1,
+                borderColor: colors.outline[300],
+              }}
+              multiline
+              maxLength={500}
+              returnKeyType="send"
+              // onSubmitEditing={sendMessage}
+              blurOnSubmit={false}
+            />
+            <Pressable
+              onPress={sendMessage}
+              disabled={!newMessage.trim()}
+              style={{
+                width: 50,
+                height: 50,
+                borderRadius: "50%",
+                padding: 10,
+                backgroundColor: newMessage.trim()
+                  ? colors.primary[500]
+                  : colors.outline[300],
+                justifyContent: "center",
+                alignItems: "center",
+                marginLeft: 8,
+              }}
+            >
+              <Ionicons name="send" size={25} color="white" />
+            </Pressable>
+          </HStack>
+        </Box>
+      </KeyboardAvoidingView>
+    </Box>
   );
 }

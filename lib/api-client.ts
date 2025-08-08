@@ -1,5 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios, { AxiosError, AxiosInstance } from "axios";
+import { router } from "expo-router";
 import {
   ApiError,
   AuthResponse,
@@ -9,10 +10,13 @@ import {
   MatchesResponse,
   PotentialMatchesResponse,
   ProfileResponse,
+  RefreshData,
+  RefreshResponse,
   SignUpData,
   UpdateMatchData,
   UpdateProfileData,
 } from "./types";
+import { UnifiedAuth } from "./unified-auth";
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
 
@@ -50,9 +54,46 @@ class ApiClient {
       (response) => response,
       async (error: AxiosError) => {
         if (error.response?.status === 401) {
-          // Token expired or invalid, clear storage and redirect to login
-          await AsyncStorage.removeItem("access_token");
-          await AsyncStorage.removeItem("refresh_token");
+          const refreshToken = await AsyncStorage.getItem("refresh_token");
+          if (refreshToken) {
+            try {
+              const response = await this.client.post<RefreshResponse>(
+                "/auth/refresh",
+                {
+                  refresh_token: refreshToken,
+                }
+              );
+
+              if (response.data.success) {
+                await AsyncStorage.setItem(
+                  "access_token",
+                  response.data.data.session.access_token
+                );
+                await AsyncStorage.setItem(
+                  "refresh_token",
+                  response.data.data.session.refresh_token
+                );
+
+                // Retry the original request with the new token
+                const originalRequest = error.config;
+                if (originalRequest) {
+                  // Add the new access token to the retry request
+                  const newToken = response.data.data.session.access_token;
+                  originalRequest.headers = originalRequest.headers || {};
+                  originalRequest.headers.Authorization = `Bearer ${newToken}`;
+
+                  // Retry the original request
+                  return this.client.request(originalRequest);
+                }
+              }
+            } catch (refreshError) {
+              console.log("Token refresh failed:", refreshError);
+              router.replace("/(auth)/login");
+              // If refresh fails, continue to logout
+            }
+          }
+
+          await UnifiedAuth.logout();
           // Note: Actual navigation should be handled in the app layer
         }
 
@@ -99,6 +140,14 @@ class ApiClient {
       }
     }
 
+    return response.data;
+  }
+
+  async refresh(data: RefreshData): Promise<RefreshResponse> {
+    const response = await this.client.post<RefreshResponse>(
+      "/auth/refresh",
+      data
+    );
     return response.data;
   }
 
