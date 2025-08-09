@@ -62,6 +62,7 @@ export default function EditProfileScreen() {
       is_premium: user?.is_premium || false,
       examPreferences: (user?.examPreferences as any) || undefined,
     },
+    mode: "onTouched"
   });
 
   const onSubmit = async (data: UpdateProfileData) => {
@@ -91,6 +92,7 @@ export default function EditProfileScreen() {
       enableOnAndroid={true}
       extraScrollHeight={20} // give a little breathing room
       keyboardShouldPersistTaps="handled"
+      className="bg-background-0 "
     >
       <VStack space="xl" className="pb-8">
         {/* Header */}

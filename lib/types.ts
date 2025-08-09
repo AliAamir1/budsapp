@@ -24,19 +24,25 @@ export const RefreshSchema = z.object({
 });
 
 export const UpdateProfileSchema = z.object({
-  name: z.string().optional(),
+  name: z.string().min(1, { message: "Name is required" }).optional(),
   gender: z.enum(["male", "female", "other"]).optional(),
   birthdate: z.string().optional(), // ISO date string
-  region: z.string().optional(),
-  course: z.string().optional(),
-  examDate: z.string().optional(), // ISO date string
+  region: z.string().min(1, { message: "Region is required" }).optional(),
+  course: z.string().min(1, { message: "Course is required" }).optional(),
+  examDate: z.string().min(1, { message: "Exam date is required" }).optional(), // ISO date string
   partner_preferences: z
     .object({
-      study_schedule: z.string().optional(),
-      communication_style: z.string().optional(),
+      study_schedule: z
+        .string()
+        .min(1, { message: "Study schedule is required" })
+        .optional(),
+      communication_style: z
+        .string()
+        .min(1, { message: "Communication style is required" })
+        .optional(),
     })
     .optional(),
-  bio: z.string().optional(),
+  bio: z.string().min(1, { message: "Bio is required" }).optional(),
   is_premium: z.boolean().optional(),
   examPreferences: z
     .object({

@@ -28,6 +28,7 @@ export default function RegisterScreen() {
     control,
     handleSubmit,
     formState: { errors },
+    setFocus,
   } = useForm<SignUpData>({
     resolver: zodResolver(SignUpSchema),
     defaultValues: {
@@ -36,6 +37,7 @@ export default function RegisterScreen() {
       full_name: "",
       confirm_password: "",
     },
+    mode: "onTouched"
   });
 
   const onSubmit = async (data: SignUpData) => {
@@ -108,15 +110,19 @@ export default function RegisterScreen() {
             <Controller
               control={control}
               name="full_name"
-              render={({ field: { onChange, onBlur, value } }) => (
+              render={({ field: { onChange, onBlur, value, ref } }) => (
                 <Input size="xl">
                   <InputField
+                    ref={ref}
                     placeholder="Enter your full name"
                     value={value}
                     onChangeText={onChange}
                     onBlur={onBlur}
                     autoCapitalize="words"
                     autoComplete="name"
+                    returnKeyType="next"
+                    blurOnSubmit={false}
+                    onSubmitEditing={() => setFocus('email')}
                     className="text-xl"
                   />
                 </Input>
@@ -139,9 +145,10 @@ export default function RegisterScreen() {
             <Controller
               control={control}
               name="email"
-              render={({ field: { onChange, onBlur, value } }) => (
+              render={({ field: { onChange, onBlur, value, ref } }) => (
                 <Input size="xl">
                   <InputField
+                    ref={ref}
                     placeholder="Enter your email"
                     value={value}
                     onChangeText={onChange}
@@ -149,6 +156,9 @@ export default function RegisterScreen() {
                     keyboardType="email-address"
                     autoCapitalize="none"
                     autoComplete="email"
+                    returnKeyType="next"
+                    blurOnSubmit={false}
+                    onSubmitEditing={() => setFocus('password')}
                   />
                 </Input>
               )}
@@ -170,15 +180,19 @@ export default function RegisterScreen() {
             <Controller
               control={control}
               name="password"
-              render={({ field: { onChange, onBlur, value } }) => (
+              render={({ field: { onChange, onBlur, value, ref } }) => (
                 <Input size="xl">
                   <InputField
+                    ref={ref}
                     placeholder="Enter your password (min 6 characters)"
                     value={value}
                     onChangeText={onChange}
                     onBlur={onBlur}
                     secureTextEntry
                     autoComplete="new-password"
+                    returnKeyType="next"
+                    blurOnSubmit={false}
+                    onSubmitEditing={() => setFocus('confirm_password')}
                   />
                 </Input>
               )}
@@ -202,15 +216,18 @@ export default function RegisterScreen() {
             <Controller
               control={control}
               name="confirm_password"
-              render={({ field: { onChange, onBlur, value } }) => (
+              render={({ field: { onChange, onBlur, value, ref } }) => (
                 <Input size="xl">
                   <InputField
+                    ref={ref}
                     placeholder="Confirm your password"
                     value={value}
                     onChangeText={onChange}
                     onBlur={onBlur}
                     secureTextEntry
                     autoComplete="new-password"
+                    returnKeyType="go"
+                    onSubmitEditing={handleSubmit(onSubmit)}
                   />
                 </Input>
               )}
@@ -238,7 +255,7 @@ export default function RegisterScreen() {
         </VStack>
 
         {/* Footer */}
-        <HStack space="sm" className="justify-center">
+        <HStack space="sm" className="justify-center mb-40">
           <Text size="lg" className="text-typography-0">
             Already have an account?
           </Text>

@@ -87,6 +87,8 @@ export default function OnboardingScreen() {
       daily_study_time: user?.examPreferences?.daily_study_time || "04:00:00",
       intensity: user?.examPreferences?.intensity || "moderate",
     },
+    mode: "onChange"
+    
   });
 
   const nextStep = async () => {

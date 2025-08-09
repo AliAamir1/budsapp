@@ -34,13 +34,16 @@ export default function LoginScreen() {
     control,
     handleSubmit,
     formState: { errors },
+    setFocus,
   } = useForm<LoginData>({
     resolver: zodResolver(LoginSchema),
     defaultValues: {
       email: "",
       password: "",
     },
+    mode: "onTouched",
   });
+  // Use react-hook-form's built-in focus management
 
   const onSubmit = async (data: LoginData) => {
     try {
@@ -123,16 +126,22 @@ export default function LoginScreen() {
             <Controller
               control={control}
               name="email"
-              render={({ field: { onChange, onBlur, value } }) => (
+              render={({ field: { onChange, onBlur, value, ref } }) => (
                 <Input size="xl" className="px-4 rounded-xl">
                   <InputField
+                    ref={ref}
                     placeholder="Enter your email"
                     value={value}
                     onChangeText={onChange}
                     onBlur={onBlur}
                     keyboardType="email-address"
                     autoCapitalize="none"
+                    returnKeyType="next"
                     autoComplete="email"
+                    blurOnSubmit={false}
+                    onSubmitEditing={() => {
+                      setFocus("password");
+                    }}
                     className="text-xl"
                   />
                 </Input>
@@ -155,15 +164,18 @@ export default function LoginScreen() {
             <Controller
               control={control}
               name="password"
-              render={({ field: { onChange, onBlur, value } }) => (
+              render={({ field: { onChange, onBlur, value, ref } }) => (
                 <Input className="px-4 rounded-xl" size="xl">
                   <InputField
+                    ref={ref}
                     placeholder="Enter your password"
                     value={value}
                     onChangeText={onChange}
                     onBlur={onBlur}
                     secureTextEntry
                     autoComplete="password"
+                    returnKeyType="go"
+                    onSubmitEditing={handleSubmit(onSubmit)}
                     className="text-xl"
                   />
                 </Input>
