@@ -164,7 +164,7 @@ export default function EditProfileScreen() {
                       key={option}
                       variant={value === option ? "solid" : "outline"}
                       onPress={() => onChange(option)}
-                      className={`flex-1 min-w-[100px] ${
+                      className={`flex-1 px-0 ${
                         value === option
                           ? "bg-primary-500"
                           : "bg-transparent border-primary-300"
@@ -172,7 +172,7 @@ export default function EditProfileScreen() {
                       size="lg"
                     >
                       <ButtonText
-                        className={`text-lg capitalize ${
+                        className={`text-md capitalize ${
                           value === option ? "text-white" : "text-primary-500"
                         }`}
                       >
@@ -373,6 +373,51 @@ export default function EditProfileScreen() {
               </FormControlErrorText>
             </FormControlError>
           </FormControl>
+
+          {/* Study Intensity (shown if exam preferences exist) */}
+          {user?.examPreferences && (
+            <FormControl isInvalid={!!errors.examPreferences?.intensity}>
+              <FormControlLabel>
+                <FormControlLabelText className="text-typography-0 text-lg">
+                  Study Intensity
+                </FormControlLabelText>
+              </FormControlLabel>
+              <Controller
+                control={control}
+                name="examPreferences.intensity"
+                render={({ field: { onChange, value } }) => (
+                  <HStack space="md" className="flex-wrap">
+                    {["light", "moderate", "intense"].map((option) => (
+                      <Button
+                        key={option}
+                        variant={value === option ? "solid" : "outline"}
+                        onPress={() => onChange(option)}
+                        className={`flex-1 px-0 ${
+                          value === option
+                            ? "bg-primary-500"
+                            : "bg-transparent border-primary-300"
+                        }`}
+                        size="lg"
+                      >
+                        <ButtonText
+                          className={`text-md capitalize ${
+                            value === option ? "text-white" : "text-primary-500"
+                          }`}
+                        >
+                          {option}
+                        </ButtonText>
+                      </Button>
+                    ))}
+                  </HStack>
+                )}
+              />
+              <FormControlError>
+                <FormControlErrorText className="text-lg">
+                  {errors.examPreferences?.intensity?.message}
+                </FormControlErrorText>
+              </FormControlError>
+            </FormControl>
+          )}
 
           {/* Bio */}
           <FormControl isInvalid={!!errors.bio}>
