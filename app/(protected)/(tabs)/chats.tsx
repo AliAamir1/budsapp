@@ -1,18 +1,3 @@
-import { Ionicons } from "@expo/vector-icons";
-import { useFocusEffect } from "@react-navigation/native";
-import { useRouter } from "expo-router";
-import React, { useEffect, useState } from "react";
-import {
-  ActivityIndicator,
-  FlatList,
-  Image,
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  RefreshControl,
-  View,
-} from "react-native";
-
 import { Box } from "@/components/ui/box";
 import { Heading } from "@/components/ui/heading";
 import { HStack } from "@/components/ui/hstack";
@@ -21,9 +6,26 @@ import { VStack } from "@/components/ui/vstack";
 import { useTheme } from "@/hooks/useTheme";
 import { useAuth } from "@/lib/auth-context";
 import { ChatService } from "@/lib/chat-service";
-import { useMatchedUsers, useUpdateMatchStatus, useUserChats } from "@/lib/queries";
+import {
+  useMatchedUsers,
+  useUpdateMatchStatus,
+  useUserChats,
+} from "@/lib/queries";
 import { Match } from "@/lib/types";
+import { Ionicons } from "@expo/vector-icons";
+import { useFocusEffect } from "@react-navigation/native";
 import { useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "expo-router";
+import React, { useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  FlatList,
+  Image,
+  Pressable,
+  RefreshControl,
+  View
+} from "react-native";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 
 type TabType = "conversations" | "new-matches";
 
@@ -75,7 +77,9 @@ export default function ChatsScreen() {
         console.log("Real-time match update received:", updatedMatch);
         // Refresh new matches data and counts
         refetchMatches();
-        queryClient.invalidateQueries({ queryKey: ["matches", "matched", currentUserId] });
+        queryClient.invalidateQueries({
+          queryKey: ["matches", "matched", currentUserId],
+        });
       }
     );
 
@@ -102,7 +106,11 @@ export default function ChatsScreen() {
   ).length;
 
   // Navigation helpers
-  const openChatByPartner = (partnerId: string, partnerName?: string, chatId?: string) => {
+  const openChatByPartner = (
+    partnerId: string,
+    partnerName?: string,
+    chatId?: string
+  ) => {
     router.push({
       pathname: "/(protected)/chat/[id]",
       params: { id: chatId || "", partnerId, partnerName: partnerName || "" },
@@ -184,15 +192,20 @@ export default function ChatsScreen() {
     const isMatched = match.status === "matched";
 
     return (
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={{ flex: 1 }}
+      <KeyboardAwareScrollView
+        style={{ flex: 1, paddingHorizontal: 20 }}
+        contentContainerStyle={{ flexGrow: 1, justifyContent: "center" }}
+        enableOnAndroid={true}
+        extraScrollHeight={20}
+        keyboardShouldPersistTaps="handled"
       >
         <Pressable
           onPress={() => {
             if (!isMatched) return;
             const partnerId =
-              match.user1_id === currentUserId ? match.user2_id : match.user1_id;
+              match.user1_id === currentUserId
+                ? match.user2_id
+                : match.user1_id;
             openChatByPartner(partnerId, partnerProfile.full_name, match.id);
           }}
           disabled={isPending}
@@ -269,7 +282,7 @@ export default function ChatsScreen() {
             </HStack>
           </Box>
         </Pressable>
-      </KeyboardAvoidingView>
+      </KeyboardAwareScrollView>
     );
   };
 
@@ -321,7 +334,9 @@ export default function ChatsScreen() {
       return (
         <VStack space="lg" className="flex-1 items-center justify-center">
           <ActivityIndicator size="large" color={colors.primary[500]} />
-          <Text className="text-typography-400 text-lg">Loading new matches...</Text>
+          <Text className="text-typography-400 text-lg">
+            Loading new matches...
+          </Text>
         </VStack>
       );
     }
@@ -329,8 +344,12 @@ export default function ChatsScreen() {
     if (matchesError) {
       return (
         <VStack space="lg" className="flex-1 items-center justify-center">
-          <Heading size="xl" className="text-error-500">Oops!</Heading>
-          <Text className="text-typography-400 text-lg text-center">Failed to load matches.</Text>
+          <Heading size="xl" className="text-error-500">
+            Oops!
+          </Heading>
+          <Text className="text-typography-400 text-lg text-center">
+            Failed to load matches.
+          </Text>
         </VStack>
       );
     }
@@ -338,9 +357,16 @@ export default function ChatsScreen() {
     if (pendingMatches.length === 0) {
       return (
         <VStack space="lg" className="flex-1 items-center justify-center">
-          <Image source={require("@/assets/images/chick.png")} style={{ width: 100, height: 100 }} />
-          <Heading size="xl" className="text-typography-400">No New Matches</Heading>
-          <Text className="text-typography-400 text-lg text-center">Start swiping to find study partners!</Text>
+          <Image
+            source={require("@/assets/images/chick.png")}
+            style={{ width: 100, height: 100 }}
+          />
+          <Heading size="xl" className="text-typography-400">
+            No New Matches
+          </Heading>
+          <Text className="text-typography-400 text-lg text-center">
+            Start swiping to find study partners!
+          </Text>
         </VStack>
       );
     }
@@ -351,7 +377,12 @@ export default function ChatsScreen() {
         renderItem={renderNewMatchItem}
         keyExtractor={(item) => item.id}
         showsVerticalScrollIndicator={false}
-        refreshControl={<RefreshControl refreshing={isLoadingMatches} onRefresh={refetchMatches} />}
+        refreshControl={
+          <RefreshControl
+            refreshing={isLoadingMatches}
+            onRefresh={refetchMatches}
+          />
+        }
         contentContainerStyle={{ paddingBottom: 100 }}
       />
     );
@@ -362,7 +393,9 @@ export default function ChatsScreen() {
       return (
         <VStack space="lg" className="flex-1 items-center justify-center">
           <ActivityIndicator size="large" color={colors.primary[500]} />
-          <Text className="text-typography-400 text-lg">Loading conversations...</Text>
+          <Text className="text-typography-400 text-lg">
+            Loading conversations...
+          </Text>
         </VStack>
       );
     }
@@ -370,8 +403,12 @@ export default function ChatsScreen() {
     if (chatsError) {
       return (
         <VStack space="lg" className="flex-1 items-center justify-center">
-          <Heading size="xl" className="text-error-500">Oops!</Heading>
-          <Text className="text-typography-400 text-lg text-center">Failed to load conversations.</Text>
+          <Heading size="xl" className="text-error-500">
+            Oops!
+          </Heading>
+          <Text className="text-typography-400 text-lg text-center">
+            Failed to load conversations.
+          </Text>
         </VStack>
       );
     }
@@ -379,9 +416,16 @@ export default function ChatsScreen() {
     if (chats.length === 0) {
       return (
         <VStack space="lg" className="flex-1 items-center justify-center">
-          <Image source={require("@/assets/images/chick.png")} style={{ width: 100, height: 100 }} />
-          <Heading size="xl" className="text-typography-400">No Conversations Yet</Heading>
-          <Text className="text-typography-400 text-lg text-center">Start accepting matches to begin conversations!</Text>
+          <Image
+            source={require("@/assets/images/chick.png")}
+            style={{ width: 100, height: 100 }}
+          />
+          <Heading size="xl" className="text-typography-400">
+            No Conversations Yet
+          </Heading>
+          <Text className="text-typography-400 text-lg text-center">
+            Start accepting matches to begin conversations!
+          </Text>
         </VStack>
       );
     }
@@ -391,14 +435,25 @@ export default function ChatsScreen() {
         data={chats}
         keyExtractor={(item) => item.id}
         showsVerticalScrollIndicator={false}
-        refreshControl={<RefreshControl refreshing={isLoadingChats} onRefresh={refetchChats} />}
+        refreshControl={
+          <RefreshControl
+            refreshing={isLoadingChats}
+            onRefresh={refetchChats}
+          />
+        }
         contentContainerStyle={{ paddingBottom: 100 }}
         renderItem={({ item }) => {
           const isRecipientOne = item.recipient_one === currentUserId;
-          const partnerId = isRecipientOne ? item.recipient_two : item.recipient_one;
-          const partnerName = isRecipientOne ? item.recipient_two_name : item.recipient_one_name;
+          const partnerId = isRecipientOne
+            ? item.recipient_two
+            : item.recipient_one;
+          const partnerName = isRecipientOne
+            ? item.recipient_two_name
+            : item.recipient_one_name;
           return (
-            <Pressable onPress={() => openChatByPartner(partnerId, partnerName, item.id)}>
+            <Pressable
+              onPress={() => openChatByPartner(partnerId, partnerName, item.id)}
+            >
               <Box className="bg-background-0 rounded-xl p-4 border border-outline-200 mb-3">
                 <HStack space="md" className="items-center">
                   <View
@@ -411,15 +466,27 @@ export default function ChatsScreen() {
                       alignItems: "center",
                     }}
                   >
-                    <Image source={require("@/assets/images/chick.png")} style={{ width: 40, height: 40 }} />
+                    <Image
+                      source={require("@/assets/images/chick.png")}
+                      style={{ width: 40, height: 40 }}
+                    />
                   </View>
                   <VStack space="xs" className="flex-1">
-                    <Text className="text-typography-0 text-lg font-semibold">{partnerName || "Conversation"}</Text>
+                    <Text className="text-typography-0 text-lg font-semibold">
+                      {partnerName || "Conversation"}
+                    </Text>
                     {!!item.last_message && (
-                      <Text className="text-typography-500 text-sm" numberOfLines={1}>{item.last_message}</Text>
+                      <Text
+                        className="text-typography-500 text-sm"
+                        numberOfLines={1}
+                      >
+                        {item.last_message}
+                      </Text>
                     )}
                     {!!item.updated_at && (
-                      <Text className="text-typography-400 text-xs">{new Date(item.updated_at).toLocaleString()}</Text>
+                      <Text className="text-typography-400 text-xs">
+                        {new Date(item.updated_at).toLocaleString()}
+                      </Text>
                     )}
                   </VStack>
                   <Text className="text-typography-400 text-xl">›</Text>
@@ -484,7 +551,11 @@ export default function ChatsScreen() {
           {renderTabButton("new-matches", "New Matches", newMatchesCount)}
         </HStack>
 
-        {activeTab === "conversations" ? <ConversationsList /> : <NewMatchesList />}
+        {activeTab === "conversations" ? (
+          <ConversationsList />
+        ) : (
+          <NewMatchesList />
+        )}
       </VStack>
     </Box>
   );

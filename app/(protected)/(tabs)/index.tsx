@@ -69,7 +69,6 @@ const UserCard: React.FC<UserCardProps> = ({ user, index, onSwipe, isTop }) => {
   // Smooth transition to top position when card becomes active
   React.useEffect(() => {
     console.log("index", index);
-    debugger;
     if (isTop) {
       // Animate to top position with smooth transition
       scale.value = withSpring(1, { damping: 20, stiffness: 200 });

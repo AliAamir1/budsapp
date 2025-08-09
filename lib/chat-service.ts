@@ -161,7 +161,6 @@ export class ChatService {
           filter: `recipient_one=eq.${userId}`,
         },
         (payload) => {
-          debugger;
           callback(payload.new as Chat);
         }
       )

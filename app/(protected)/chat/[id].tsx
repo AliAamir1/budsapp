@@ -2,6 +2,7 @@ import { Box } from "@/components/ui/box";
 import { HStack } from "@/components/ui/hstack";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
+import { useKeyboardState } from "@/hooks/useKeyboardState";
 import { useTheme } from "@/hooks/useTheme";
 import { useAuth } from "@/lib/auth-context";
 import { ChatService } from "@/lib/chat-service";
@@ -19,8 +20,9 @@ import {
   Pressable,
   StatusBar,
   TextInput,
-  View
+  View,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 interface ChatMessage {
   id: string;
@@ -53,6 +55,8 @@ export default function ChatScreen() {
   const [error, setError] = useState<string | null>(null);
   const [newMessage, setNewMessage] = useState("");
   const [actualChatId, setActualChatId] = useState<string | null>(null);
+  const insets = useSafeAreaInsets();
+  const keyboardState = useKeyboardState();
 
   // Convert Supabase message to ChatMessage
   const convertMessage = (message: Message): ChatMessage => ({
@@ -204,109 +208,98 @@ export default function ChatScreen() {
   );
 
   return (
-    <Box className="flex-1 bg-background-0">
-      <StatusBar
-        barStyle="dark-content"
-        backgroundColor={colors.background[100]}
-      />
-
-      {/* Header with proper safe area handling */}
-      <Box
-        className="bg-background-100 border-b border-outline-200"
-        style={{
-          // paddingTop: insets.top,
-          paddingBottom: 16,
-          paddingHorizontal: 16,
-        }}
-      >
-        <HStack space="md" className="items-center">
-          {/* Back button with proper icon */}
-          <Pressable
-            onPress={handleBackPress}
-            style={{
-              width: 40,
-              height: 40,
-              borderRadius: 20,
-              backgroundColor: "rgba(255, 255, 255, 0.1)",
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
-            <Ionicons
-              name="arrow-back"
-              size={24}
-              color={colors.typography[0]}
-            />
-          </Pressable>
-
-          {/* User avatar */}
-          <View
-            style={{
-              width: 40,
-              height: 40,
-              borderRadius: 20,
-              backgroundColor: colors.primary[500],
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
-            <Image
-              source={require("@/assets/images/chick.png")}
-              style={{ width: 30, height: 30 }}
-            />
-          </View>
-
-          {/* User info */}
-          <VStack space="xs" className="flex-1">
-            <Text className="text-typography-0 text-lg font-semibold">
-              {partnerName || "Study Partner"}
-            </Text>
-            {/* <Text className="text-typography-400 text-sm">
-                Online
-              </Text> */}
-          </VStack>
-        </HStack>
-      </Box>
-
-      {/* Messages with proper keyboard handling */}
-      <Box style={{ flex: 1 }}>
-        <FlatList
-          ref={flatListRef}
-          data={messages}
-          renderItem={renderMessage}
-          keyExtractor={(item) => item.id}
-          inverted
-          style={{ flex: 1, backgroundColor: colors.background[0] }}
-          contentContainerStyle={{
-            paddingVertical: 10,
-            flexGrow: 1,
-          }}
-          showsVerticalScrollIndicator={true}
-          scrollEnabled={true}
-          onContentSizeChange={() => {
-            if (messages.length > 0) {
-              flatListRef.current?.scrollToOffset({
-                offset: 0,
-                animated: true,
-              });
-            }
-          }}
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={keyboardState.isVisible ? insets.top : 0}
+    >
+      <Box className="flex-1 bg-background-0">
+        <StatusBar
+          barStyle="dark-content"
+          backgroundColor={colors.background[100]}
         />
-      </Box>
 
-      {/* Input with proper keyboard handling */}
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 12 : 0}
-      >
-        <Box
-          className="bg-background-100 border-t border-outline-200"
-          style={{
-            paddingHorizontal: 16,
-            paddingTop: 12,
-            // paddingBottom: insets.bottom + 12,
-          }}
-        >
+        {/* Header with proper safe area handling */}
+        <Box className="bg-background-100 border-b border-outline-200 py-4 px-4">
+          <HStack space="md" className="items-center">
+            {/* Back button with proper icon */}
+            <Pressable
+              onPress={handleBackPress}
+              style={{
+                width: 40,
+                height: 40,
+                borderRadius: 20,
+                backgroundColor: "rgba(255, 255, 255, 0.1)",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <Ionicons
+                name="arrow-back"
+                size={24}
+                color={colors.typography[0]}
+              />
+            </Pressable>
+
+            {/* User avatar */}
+            <View
+              style={{
+                width: 40,
+                height: 40,
+                borderRadius: 20,
+                backgroundColor: colors.primary[500],
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <Image
+                source={require("@/assets/images/chick.png")}
+                style={{ width: 30, height: 30 }}
+              />
+            </View>
+
+            {/* User info */}
+            <VStack space="xs" className="flex-1">
+              <Text className="text-typography-0 text-lg font-semibold">
+                {partnerName || "Study Partner"}
+              </Text>
+              {/* <Text className="text-typography-400 text-sm">
+                  Online
+                </Text> */}
+            </VStack>
+          </HStack>
+        </Box>
+
+        {/* Messages with proper keyboard handling */}
+        <Box style={{ flex: 1 }}>
+          <FlatList
+            ref={flatListRef}
+            data={messages}
+            renderItem={renderMessage}
+            keyExtractor={(item) => item.id}
+            inverted
+            style={{ flex: 1, backgroundColor: colors.background[0] }}
+            contentContainerStyle={{
+              paddingVertical: 10,
+              flexGrow: 1,
+            }}
+            showsVerticalScrollIndicator={true}
+            scrollEnabled={true}
+            onContentSizeChange={() => {
+              if (messages.length > 0) {
+                flatListRef.current?.scrollToOffset({
+                  offset: 0,
+                  animated: true,
+                });
+              }
+            }}
+            keyboardShouldPersistTaps="handled"
+            keyboardDismissMode="interactive"
+          />
+        </Box>
+
+        {/* Input with proper keyboard handling */}
+        <Box className="bg-background-100 border-t border-outline-200 py-6 px-4">
           <HStack className="items-center">
             <TextInput
               ref={inputRef}
@@ -340,7 +333,7 @@ export default function ChatScreen() {
               style={{
                 width: 50,
                 height: 50,
-                borderRadius: "50%",
+                borderRadius: 25,
                 padding: 10,
                 backgroundColor: newMessage.trim()
                   ? colors.primary[500]
@@ -354,7 +347,7 @@ export default function ChatScreen() {
             </Pressable>
           </HStack>
         </Box>
-      </KeyboardAvoidingView>
-    </Box>
+      </Box>
+    </KeyboardAvoidingView>
   );
 }
