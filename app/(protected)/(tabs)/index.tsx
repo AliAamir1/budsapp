@@ -48,8 +48,8 @@ const UserCard: React.FC<UserCardProps> = ({ user, index, onSwipe, isTop }) => {
   const { colors } = useTheme();
   const translateX = useSharedValue(0);
   const translateY = useSharedValue(0);
-  const scale = useSharedValue(isTop ? 1 : 0.85); // Increased scale difference for better visibility
-  const opacity = useSharedValue(0); // Start with opacity 0 for entrance animation
+  const scale = useSharedValue(isTop ? 0.85 : 0.85); // Increased scale difference for better visibility
+  const opacity = useSharedValue(1); // Start with opacity 0 for entrance animation
   const rotation = useSharedValue(0);
   const circleScale = useSharedValue(0);
   const circleOpacity = useSharedValue(0);
@@ -58,31 +58,32 @@ const UserCard: React.FC<UserCardProps> = ({ user, index, onSwipe, isTop }) => {
   const rightCircleOpacity = useSharedValue(0);
 
   // Entrance animation
-  React.useEffect(() => {
-    // Stagger the entrance animation based on index
-    const delay = index * 100;
-    setTimeout(() => {
-      opacity.value = withSpring(1, { damping: 20, stiffness: 200 });
-    }, delay);
-  }, [index]);
+  // React.useEffect(() => {
+  //   // Stagger the entrance animation based on index
+  //   const delay = index * 100;
+  //   setTimeout(() => {
+  //     opacity.value = withSpring(1, { damping: 200, stiffness: 10 });
+  //   }, delay);
+  // }, [index]);
 
   // Smooth transition to top position when card becomes active
   React.useEffect(() => {
+    console.log("index", index);
+    debugger;
     if (isTop) {
       // Animate to top position with smooth transition
       scale.value = withSpring(1, { damping: 20, stiffness: 200 });
       translateY.value = withSpring(0, { damping: 20, stiffness: 200 });
       translateX.value = withSpring(0, { damping: 20, stiffness: 200 });
       rotation.value = withSpring(0, { damping: 20, stiffness: 200 });
+    } else if (index === 1) {
+      scale.value = withSpring(0.85, { damping: 20, stiffness: 200 });
+      rotation.value = withSpring(0, { damping: 20, stiffness: 200 });
     } else {
       // Animate to background position with subtle rotation
       scale.value = withSpring(0.85, { damping: 20, stiffness: 200 });
-      translateY.value = withSpring(index * 15, {
-        damping: 20,
-        stiffness: 200,
-      });
-      translateX.value = withSpring(0, { damping: 20, stiffness: 200 });
-      rotation.value = withSpring(index % 2 === 0 ? 2 : -2, {
+
+      rotation.value = withSpring(index % 2 === 0 ? 4 : -4, {
         damping: 20,
         stiffness: 200,
       });
@@ -200,7 +201,8 @@ const UserCard: React.FC<UserCardProps> = ({ user, index, onSwipe, isTop }) => {
         { scale: scale.value },
       ],
       opacity: opacity.value,
-      zIndex: isTop ? 10 : index,
+      // Reverse z-index: lower index = higher z-index (closer to top)
+      zIndex: isTop ? 10 : 10 - index,
     };
   });
 
@@ -237,14 +239,15 @@ const UserCard: React.FC<UserCardProps> = ({ user, index, onSwipe, isTop }) => {
             width: screenWidth * 0.875,
             height: 360,
             alignSelf: "center",
-            top: 10 + index * 8, // Reduced spacing for tighter stack
+            // Keep a fixed top; use animated translateY for stacking to avoid layout jumps
+            top: 10,
           },
           animatedStyle,
         ]}
       >
         <Animated.View style={[cardAnimatedStyle]}>
           <Box
-            className="rounded-3xl p-6 border-4 shadow-lg"
+            className={`rounded-3xl p-6 border-4 shadow-lg`}
             style={{
               shadowColor: colors.primary[500],
               shadowOffset: { width: 0, height: index * 3 },
@@ -440,7 +443,7 @@ export default function HomeScreen() {
     refetch,
   } = usePotentialMatches(
     currentUserId || "",
-    { page: 1, limit: 20 },
+    { page: 1, limit: 100000 },
     !!currentUserId
   );
 
@@ -450,6 +453,7 @@ export default function HomeScreen() {
       if (currentUserId) {
         console.log("refetching potential matches");
         refetch();
+        setCurrentIndex(0);
       }
     }, [currentUserId, refetch])
   );
@@ -470,10 +474,11 @@ export default function HomeScreen() {
       );
     }
 
-    // Move to next card with smoother transition
-    setTimeout(() => {
-      setCurrentIndex((prev) => prev + 1);
-    }, 200); // Reduced delay for smoother transition
+    setCurrentIndex((prev) => prev + 1);
+    // // Move to next card with smoother transition
+    // setTimeout(() => {
+    //   setCurrentIndex((prev) => prev + 1);
+    // }, 100); // Reduced delay for smoother transition
   };
 
   // Show loading state
