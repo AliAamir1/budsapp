@@ -230,7 +230,7 @@ export default function OnboardingScreen() {
                         key={option}
                         variant={value === option ? "solid" : "outline"}
                         onPress={() => onChange(option)}
-                        className={`flex-1 min-w-[100px] ${
+                        className={`flex-1 px-0 ${
                           value === option
                             ? "bg-primary-500"
                             : "bg-transparent border-primary-300"
@@ -238,7 +238,7 @@ export default function OnboardingScreen() {
                         size="lg"
                       >
                         <ButtonText
-                          className={`text-lg capitalize ${
+                          className={`text-md capitalize ${
                             value === option ? "text-white" : "text-primary-500"
                           }`}
                         >
@@ -644,7 +644,7 @@ export default function OnboardingScreen() {
                         key={option}
                         variant={value === option ? "solid" : "outline"}
                         onPress={() => onChange(option)}
-                        className={`flex-1 min-w-[100px] ${
+                        className={`flex-1 px-0 ${
                           value === option
                             ? "bg-primary-500"
                             : "bg-transparent border-primary-300"
