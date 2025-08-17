@@ -28,6 +28,7 @@ import { countries } from "@/consts/countries";
 import { studySchedules } from "@/consts/studySchedule";
 import { useAuth } from "@/lib/auth-context";
 import { useExams, useUpdateProfile } from "@/lib/queries";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const OnboardingSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -87,8 +88,7 @@ export default function OnboardingScreen() {
       daily_study_time: user?.examPreferences?.daily_study_time || "04:00:00",
       intensity: user?.examPreferences?.intensity || "moderate",
     },
-    mode: "onChange"
-    
+    mode: "onChange",
   });
 
   const nextStep = async () => {
@@ -106,6 +106,12 @@ export default function OnboardingScreen() {
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
     }
+  };
+
+  const clearAndRedirectToLogin = async () => {
+    // ! Remove this after the pr is completed
+    await AsyncStorage.clear();
+    router.replace("/(auth)/login");
   };
 
   const getFieldsForStep = (step: number) => {
@@ -168,7 +174,7 @@ export default function OnboardingScreen() {
         [
           {
             text: "Continue",
-            onPress: () => router.replace("/(protected)"),
+            onPress: () => router.replace("/(protected)/(tabs)"),
           },
         ]
       );
@@ -682,6 +688,9 @@ export default function OnboardingScreen() {
   return (
     <Box className="flex-1 bg-background-0 relative">
       <ScrollView className="flex-1 px-6">
+        <Button onPress={clearAndRedirectToLogin} className="bg-red-500">
+          <ButtonText className="text-white">Clear and Redirect to Login</ButtonText>
+        </Button>
         <VStack space="xl" className="py-12">
           {/* Header with Logo */}
           <VStack space="md" className="items-center">

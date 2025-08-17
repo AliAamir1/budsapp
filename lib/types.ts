@@ -259,3 +259,26 @@ export interface ApiError {
   code?: string;
   details?: any;
 }
+
+export interface UserProfileResponse {
+  success: boolean;
+  message: string;
+  data: {
+    user: {
+      id: string;
+      email: string;
+      name: string;
+      gender?: string;
+      birthdate?: string;
+      region?: string;
+      course?: string;
+      examDate?: string;
+      partner_preferences?: any;
+      bio?: string;
+      is_premium: boolean;
+      created_at: string;
+      updated_at: string;
+      examPreferences?: any;
+    };
+  };
+}

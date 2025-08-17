@@ -42,6 +42,7 @@ export default function RootLayout() {
                     name="(protected)"
                     options={{ headerShown: false }}
                   />
+                  <Stack.Screen name="auth/callback" options={{ headerShown: false }} />
                   <Stack.Screen name="+not-found" />
                 </Stack>
                 <StatusBar style="auto" />

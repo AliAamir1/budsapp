@@ -1,10 +1,11 @@
 import { useAuth } from "@/lib/auth-context";
-import { Stack, useRouter } from "expo-router";
+import { Stack, usePathname, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 
 export default function ProtectedLayout() {
   const router = useRouter();
-  const { user, isAuthenticated, isLoading } = useAuth();
+  const { user, isLoading } = useAuth();
+  const pathname = usePathname();
 
   const [initialCheckDone, setInitialCheckDone] = useState(false);
 
@@ -12,27 +13,28 @@ export default function ProtectedLayout() {
     // Wait until auth finishes loading
     if (isLoading || initialCheckDone) return;
 
-    if (!isAuthenticated) {
-      router.replace("/(auth)/login");
-    } else if (
+    console.log("user from redirect to onboarding layout", user);
+    if (
       !user?.examPreferences ||
       !user.partner_preferences ||
       !user.course ||
       !user.examDate
     ) {
-      router.replace("/(protected)/onboarding");
+      console.log("redirecting to onboarding hitting");
+      console.log("pathname", pathname);
+      if (pathname !== "/onboarding") {
+        router.replace("/(protected)/onboarding");
+      }
     }
 
     setInitialCheckDone(true); // Only after handling redirect
-  }, [isAuthenticated, user, isLoading]);
+  }, [user, isLoading]);
 
   return (
     <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="index" />
       <Stack.Screen name="(tabs)" />
-      <Stack.Screen name="profile" />
+      <Stack.Screen name="edit-profile" />
       <Stack.Screen name="onboarding" />
-      <Stack.Screen name="*" />
     </Stack>
   );
 }

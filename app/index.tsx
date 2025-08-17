@@ -1,8 +1,8 @@
-import { Box } from '@/components/ui/box';
-import { Spinner } from '@/components/ui/spinner';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { Box } from "@/components/ui/box";
+import { Spinner } from "@/components/ui/spinner";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useRouter } from "expo-router";
+import { useEffect, useState } from "react";
 
 export default function RootIndex() {
   const router = useRouter();
@@ -10,24 +10,35 @@ export default function RootIndex() {
   const [hasNavigated, setHasNavigated] = useState(false);
 
   useEffect(() => {
+    
     const checkAuthStatus = async () => {
+      
       try {
-        const token = await AsyncStorage.getItem('access_token');
+        const keys = await AsyncStorage.getAllKeys();
+        console.log("keys", keys);
+        keys.forEach(async (key) => {
+          const value = await AsyncStorage.getItem(key);
+          console.log("key", key, "value", value);
+        });
+        const token = await AsyncStorage.getItem("access_token");
         const isAuthenticated = !!token;
-        
+        console.log("isAuthenticated from app index ", isAuthenticated);
+
         if (!hasNavigated) {
           setHasNavigated(true);
           if (isAuthenticated) {
-            router.replace('/(protected)');
+            console.log('protected hitting from app index')
+            router.replace("/(protected)/(tabs)");
           } else {
-            router.replace('/(auth)/login');
+            router.replace("/(auth)/login");
           }
         }
       } catch (error) {
-        console.error('Error checking auth status:', error);
+        console.error("Error checking auth status:", error);
         if (!hasNavigated) {
           setHasNavigated(true);
-          router.replace('/(auth)/login');
+          AsyncStorage.clear();
+          router.replace("/(auth)/login");
         }
       } finally {
         setIsLoading(false);

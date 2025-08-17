@@ -1,7 +1,6 @@
-
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { UnifiedAuth } from './unified-auth';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import React, { createContext, useContext, useEffect, useState } from "react";
+import { UnifiedAuth } from "./unified-auth";
 
 interface User {
   id: string;
@@ -31,7 +30,9 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState<User | null>(null);
@@ -40,13 +41,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       // Check backend authentication (primary auth system)
       const isBackendAuth = await UnifiedAuth.isBackendAuthenticated();
-      const userDataString = await AsyncStorage.getItem('user_data');
-      
+      const userDataString = await AsyncStorage.getItem("user_data");
+
       if (isBackendAuth && userDataString) {
         const userData = JSON.parse(userDataString);
         setUser(userData);
         setIsAuthenticated(true);
-        
+
         // Initialize Supabase auth for chat functionality
         await UnifiedAuth.initializeSupabaseAuth();
       } else {
@@ -54,7 +55,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setIsAuthenticated(false);
       }
     } catch (error) {
-      console.error('Error checking auth state:', error);
+      console.error("Error checking auth state:", error);
       setIsAuthenticated(false);
       setUser(null);
     } finally {
@@ -67,14 +68,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (authenticated && userData) {
       setUser(userData);
       // Store user data in AsyncStorage
-      AsyncStorage.setItem('user_data', JSON.stringify(userData));
-      
+      AsyncStorage.setItem("user_data", JSON.stringify(userData));
+
       // Initialize Supabase auth for chat functionality
       UnifiedAuth.initializeSupabaseAuth();
     } else {
       setUser(null);
       // Clear user data from AsyncStorage
-      AsyncStorage.removeItem('user_data');
+      AsyncStorage.removeItem("user_data");
     }
   };
 
@@ -87,14 +88,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   return (
-    <AuthContext.Provider value={{ 
-      isAuthenticated, 
-      isLoading, 
-      user, 
-      setAuthState, 
-      refreshAuthState, 
-      getCurrentUserId 
-    }}>
+    <AuthContext.Provider
+      value={{
+        isAuthenticated,
+        isLoading,
+        user,
+        setAuthState,
+        refreshAuthState,
+        getCurrentUserId,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
@@ -103,7 +106,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 };

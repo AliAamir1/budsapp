@@ -69,7 +69,7 @@ export default function RegisterScreen() {
       extraScrollHeight={20} // give a little breathing room
       keyboardShouldPersistTaps="handled"
     >
-      <VStack space="xl" className="w-full max-w-md mx-auto px-6">
+      <VStack space="xl" className="w-full max-w-md mx-auto">
         {/* Header */}
         <VStack space="md" className="items-center">
           <Heading size="3xl" className="text-center text-primary-500">

@@ -2,7 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Link, useRouter } from "expo-router";
 import React from "react";
 import { Controller, useForm } from "react-hook-form";
-import { Alert, Image } from "react-native";
+import { Alert, Image, Pressable } from "react-native";
 
 import { Button, ButtonText } from "@/components/ui/button";
 import {
@@ -24,6 +24,7 @@ import { useAuth } from "@/lib/auth-context";
 import { useLogin } from "@/lib/queries";
 import { SupabaseAuth } from "@/lib/supabase-auth";
 import { LoginData, LoginSchema } from "@/lib/types";
+import AntDesign from "@expo/vector-icons/AntDesign";
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -61,8 +62,18 @@ export default function LoginScreen() {
       if (needsOnboarding) {
         router.replace("/(protected)/(tabs)/profile");
       } else {
-        router.replace("/(protected)");
+        console.log('protected hitting from login success')
+        router.replace("/(protected)/(tabs)");
       }
+    } catch (error: any) {
+      Alert.alert("Login Failed", error.message || "Something went wrong");
+    }
+  };
+
+  const handleSignInWithGoogle = async () => {
+    try {
+      const userData = await SupabaseAuth.signInWithGoogle();
+      setAuthState(true, userData as any);
     } catch (error: any) {
       Alert.alert("Login Failed", error.message || "Something went wrong");
     }
@@ -199,6 +210,13 @@ export default function LoginScreen() {
               {loginMutation.isPending ? "Signing In..." : "Sign In"}
             </ButtonText>
           </Button>
+
+          <Pressable
+            onPress={handleSignInWithGoogle}
+            className="bg-primary-500 self-center rounded-full p-2 mt-4"
+          >
+            <AntDesign name="google" size={35} color="white" />
+          </Pressable>
         </VStack>
 
         {/* Footer */}

@@ -15,6 +15,7 @@ import {
   SignUpData,
   UpdateMatchData,
   UpdateProfileData,
+  UserProfileResponse,
 } from "./types";
 import { UnifiedAuth } from "./unified-auth";
 
@@ -41,7 +42,7 @@ class ApiClient {
     this.client.interceptors.request.use(
       async (config) => {
         const token = await AsyncStorage.getItem("access_token");
-       
+
         if (token && !config.headers.Authorization) {
           config.headers.Authorization = `Bearer ${token}`;
         }
@@ -153,10 +154,12 @@ class ApiClient {
   }
 
   async updateProfile(data: UpdateProfileData): Promise<ProfileResponse> {
+    console.log("updateProfile payload", data);
     const response = await this.client.post<ProfileResponse>(
       "/profiles/edit",
       data
     );
+    console.log("updateProfile response", response.data);
     return response.data;
   }
 
@@ -178,9 +181,11 @@ class ApiClient {
   }
 
   async findMatchedUsers(userId: string): Promise<MatchesResponse> {
+    console.log("findMatchedUsers", userId);
     const response = await this.client.get<MatchesResponse>(
       `/matches/${userId}/all`
     );
+    console.log("findMatchedUsers response", response.data);
     return response.data;
   }
 
@@ -208,6 +213,14 @@ class ApiClient {
   // Exams endpoint
   async getExams(): Promise<ExamsResponse> {
     const response = await this.client.get<ExamsResponse>("/exams");
+    return response.data;
+  }
+
+  async getUserProfile(userId: string): Promise<UserProfileResponse> {
+    console.log("getUserProfile", userId);
+    const response = await this.client.get<UserProfileResponse>(
+      `/matches/profiles/${userId}`
+    );
     return response.data;
   }
 

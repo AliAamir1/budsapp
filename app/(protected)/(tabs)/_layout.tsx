@@ -73,11 +73,7 @@ export default function TabLayout() {
         options={{
           title: "Chats",
           tabBarIcon: ({ color }) => (
-            <Ionicons
-              size={28}
-              name="chatbox-ellipses"
-              color={color}
-            />
+            <Ionicons size={28} name="chatbox-ellipses" color={color} />
           ),
         }}
       />
@@ -86,11 +82,7 @@ export default function TabLayout() {
         options={{
           title: "Profile",
           tabBarIcon: ({ color }) => (
-            <Ionicons
-              size={28}
-              name="person-circle"
-              color={color}
-            />
+            <Ionicons size={28} name="person-circle" color={color} />
           ),
         }}
       />

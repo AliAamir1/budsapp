@@ -54,6 +54,7 @@ export default function ChatsScreen() {
 
   const updateMatchStatusMutation = useUpdateMatchStatus();
 
+  console.log("Fuck you matchesData", matchesData, matchesError);
   const matches = matchesData?.data?.matches || [];
   const chats = chatsData || [];
 
