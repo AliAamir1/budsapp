@@ -1,3 +1,4 @@
+import apiClient from "@/lib/api-client";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Linking from "expo-linking";
 import * as WebBrowser from "expo-web-browser";
@@ -158,20 +159,11 @@ export class SupabaseAuth {
     );
     console.log("User profile created:", userProfile);
 
-    // const userData = await apiClient.getUserProfile(sessionData.user?.id!);
-    // console.log("userData", userData);
+    const userData = await apiClient.getCurrentUserProfile();
+    console.log("userData", userData);
 
-    const userData = {
-      id: sessionData.user?.id,
-      email: "aliaamir2015@gmail.com",
-      name: "Ali Aamir",
-    };
-    debugger;
     console.log("dumyData", userData);
-    await AsyncStorage.setItem(
-      "user_data",
-      JSON.stringify(userData)
-    );
+    await AsyncStorage.setItem("user_data", JSON.stringify(userData.data.user));
 
     return userData;
   }

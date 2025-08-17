@@ -153,7 +153,7 @@ export default function PartnerProfileScreen() {
 
       {/* Profile Content */}
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        <VStack space="xl" className="p-6">
+        <VStack space="xl" className="p-6 pb-20">
           {/* Profile Header */}
           <VStack space="lg" className="items-center">
             <View

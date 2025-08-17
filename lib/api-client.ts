@@ -239,6 +239,11 @@ class ApiClient {
     const token = await this.getStoredToken();
     return !!token;
   }
+
+  async getCurrentUserProfile(): Promise<UserProfileResponse> {
+    const response = await this.client.get<UserProfileResponse>(`/profiles`);
+    return response.data;
+  }
 }
 
 // Export singleton instance

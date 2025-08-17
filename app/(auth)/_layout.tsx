@@ -19,7 +19,7 @@ export default function AuthLayout() {
         
         if (authenticated && !hasNavigated) {
           setHasNavigated(true);
-          router.replace('/(protected)');
+          router.replace('/(protected)/(tabs)');
         }
       } catch (error) {
         console.error('Error checking auth status:', error);

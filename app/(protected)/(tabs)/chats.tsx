@@ -23,7 +23,7 @@ import {
   Image,
   Pressable,
   RefreshControl,
-  View
+  View,
 } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 
@@ -54,7 +54,6 @@ export default function ChatsScreen() {
 
   const updateMatchStatusMutation = useUpdateMatchStatus();
 
-  console.log("Fuck you matchesData", matchesData, matchesError);
   const matches = matchesData?.data?.matches || [];
   const chats = chatsData || [];
 
@@ -194,7 +193,7 @@ export default function ChatsScreen() {
 
     return (
       <KeyboardAwareScrollView
-        style={{ flex: 1, paddingHorizontal: 20 }}
+        style={{ flex: 1 }}
         contentContainerStyle={{ flexGrow: 1, justifyContent: "center" }}
         enableOnAndroid={true}
         extraScrollHeight={20}

@@ -12,13 +12,13 @@ import {
   FormControlLabel,
   FormControlLabelText,
 } from "@/components/ui/form-control";
-import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
-
 import { Heading } from "@/components/ui/heading";
 import { HStack } from "@/components/ui/hstack";
 import { Input, InputField } from "@/components/ui/input";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
+import { emitGoogleSignInComplete } from "@/lib/auth-events";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 
 import { useAuth } from "@/lib/auth-context";
 import { useLogin } from "@/lib/queries";
@@ -62,7 +62,7 @@ export default function LoginScreen() {
       if (needsOnboarding) {
         router.replace("/(protected)/(tabs)/profile");
       } else {
-        console.log('protected hitting from login success')
+        console.log("protected hitting from login success");
         router.replace("/(protected)/(tabs)");
       }
     } catch (error: any) {
@@ -73,7 +73,8 @@ export default function LoginScreen() {
   const handleSignInWithGoogle = async () => {
     try {
       const userData = await SupabaseAuth.signInWithGoogle();
-      setAuthState(true, userData as any);
+      setAuthState(true, userData.data.user);
+      emitGoogleSignInComplete(userData);
     } catch (error: any) {
       Alert.alert("Login Failed", error.message || "Something went wrong");
     }

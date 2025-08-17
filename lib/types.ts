@@ -273,12 +273,22 @@ export interface UserProfileResponse {
       region?: string;
       course?: string;
       examDate?: string;
-      partner_preferences?: any;
+      partner_preferences?: {
+        study_schedule: string;
+        communication_style: string;
+      };
       bio?: string;
       is_premium: boolean;
       created_at: string;
       updated_at: string;
-      examPreferences?: any;
+      examPreferences?: {
+        exam_id: string;
+        study_start_date: string;
+        study_end_date: string;
+        daily_study_time: string;
+        intensity: string;
+        course: string;
+      };
     };
   };
 }

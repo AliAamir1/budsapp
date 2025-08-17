@@ -1,33 +1,24 @@
-import { useAuth } from "@/lib/auth-context";
+import { authEventEmitter } from "@/lib/auth-events";
 import { useRouter } from "expo-router";
 import { useEffect } from "react";
 import { ActivityIndicator, Text, View } from "react-native";
 
 export default function AuthCallback() {
   const router = useRouter();
-  const { user } = useAuth();
+
   useEffect(() => {
-    const handleCallback = async () => {
-      console.log(
-        "This is the callback of authoriazation so maybe we replace the router here"
-      );
-      setTimeout(() => {
-        console.log("protected hitting from callback");
-        // router.replace("/(protected)/(tabs)");
-        console.log("user from callback", user);
-        const needsOnboarding =
-          !user?.gender || !user?.birthdate || !user?.region || !user?.course;
+    console.log("Auth callback mounted, waiting for Google sign-in completion...");
 
-        if (needsOnboarding) {
-          router.replace("/(protected)/onboarding");
-        } else {
-          console.log("protected hitting from login success");
-          router.replace("/(protected)/(tabs)");
-        }
-      }, 4000);
+    // Listen for Google sign-in completion
+    const unsubscribe = authEventEmitter.on('GOOGLE_SIGNIN_COMPLETE', (event) => {
+      console.log("Google sign-in completed, navigating to protected area");
+      router.replace("/(protected)" as any);
+    });
+
+    // Cleanup listener on unmount
+    return () => {
+      unsubscribe();
     };
-
-    handleCallback();
   }, [router]);
 
   return (

@@ -94,7 +94,7 @@ export default function EditProfileScreen() {
       keyboardShouldPersistTaps="handled"
       className="bg-background-0 "
     >
-      <VStack space="xl" className="pb-8">
+      <VStack space="xl" className="py-8">
         {/* Header */}
         <VStack space="md" className="items-center">
           <Pressable
