@@ -242,31 +242,54 @@ export default function ChatScreen() {
             </Pressable>
 
             {/* User avatar */}
-            <View
-              style={{
-                width: 40,
-                height: 40,
-                borderRadius: 20,
-                backgroundColor: colors.primary[500],
-                justifyContent: "center",
-                alignItems: "center",
+            <Pressable
+              onPress={() => {
+                if (partnerId) {
+                  router.push({
+                    pathname: "/(protected)/chat/partner-profile",
+                    params: { partnerId, partnerName }
+                  });
+                }
               }}
             >
-              <Image
-                source={require("@/assets/images/chick.png")}
-                style={{ width: 30, height: 30 }}
-              />
-            </View>
+              <View
+                style={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: 20,
+                  backgroundColor: colors.primary[500],
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <Image
+                  source={require("@/assets/images/chick.png")}
+                  style={{ width: 30, height: 30 }}
+                />
+              </View>
+            </Pressable>
 
             {/* User info */}
-            <VStack space="xs" className="flex-1">
-              <Text className="text-typography-0 text-lg font-semibold">
-                {partnerName || "Study Partner"}
-              </Text>
-              {/* <Text className="text-typography-400 text-sm">
-                  Online
-                </Text> */}
-            </VStack>
+            <Pressable
+              onPress={() => {
+                if (partnerId) {
+                  router.push({
+                    pathname: "/(protected)/chat/partner-profile",
+                    params: { partnerId, partnerName }
+                  });
+                }
+              }}
+              className="flex-1"
+            >
+              <VStack space="xs">
+                <Text className="text-typography-0 text-lg font-semibold">
+                  {partnerName || "Study Partner"}
+                </Text>
+                {/* <Text className="text-typography-400 text-sm">
+                    Online
+                  </Text> */}
+              </VStack>
+            </Pressable>
           </HStack>
         </Box>
 

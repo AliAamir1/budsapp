@@ -219,7 +219,7 @@ class ApiClient {
   async getUserProfile(userId: string): Promise<UserProfileResponse> {
     console.log("getUserProfile", userId);
     const response = await this.client.get<UserProfileResponse>(
-      `/matches/profiles/${userId}`
+      `/matches/profile/${userId}`
     );
     return response.data;
   }

@@ -35,6 +35,7 @@ export default function ProtectedLayout() {
       <Stack.Screen name="(tabs)" />
       <Stack.Screen name="edit-profile" />
       <Stack.Screen name="onboarding" />
+      <Stack.Screen name="chat" />
     </Stack>
   );
 }
